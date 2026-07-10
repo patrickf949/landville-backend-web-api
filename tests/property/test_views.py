@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.test.client import encode_multipart
 from rest_framework import status
 from rest_framework.test import force_authenticate
-from cloudinary.api import Error
+from cloudinary.api import GeneralError as Error
 from utils.media_handlers import CloudinaryResourceHandler
 from tests.property import BaseTest
 from tests.factories.authentication_factory import UserFactory
@@ -42,7 +42,7 @@ class PropertyViewTests(BaseTest):
             image_others=[self.cloudinary_image_url1,
                           self.cloudinary_image_url2],
             video=self.cloudinary_video_url1,
-            client=self.client1)
+            owner=self.user1)
         self.video_id = self.resource_handler.\
             get_cloudinary_public_id(self.dummy_property.video)
         self.image_id = self.resource_handler.\
@@ -172,9 +172,11 @@ class PropertyViewTests(BaseTest):
             res.data['errors'].get('video')),
             'Please provide a valid video file format.')
 
-    def test_that_users_who_are_not_client_admins_cannot_create_property(
+    def test_that_any_registered_user_can_create_property(
             self):
-        """Only client admins should be able to create property"""
+        """Any registered user should be allowed to create listings.
+        Without an uploaded main image the request is invalid, but it
+        must not be rejected for permission reasons."""
 
         self.user1.role = 'BY'
 
@@ -183,7 +185,7 @@ class PropertyViewTests(BaseTest):
         force_authenticate(request, user=self.user1)
         view = CreateAndListPropertyView.as_view()
         response = view(request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_that_users_who_are_not_logged_in_cannot_create_property(self):
         """Only client admins should be able to create property"""
@@ -192,7 +194,8 @@ class PropertyViewTests(BaseTest):
             self.create_list_url, self.property_data, format='json')
         view = CreateAndListPropertyView.as_view()
         response = view(request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(response.status_code, (
+            status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
 
     def test_that_client_admins_can_view_all_their_undeleted_property(self):
         """
@@ -244,18 +247,17 @@ class PropertyViewTests(BaseTest):
         # admins view all property in the database
         self.assertEqual(len(response.data.get('results')), all_property)
 
-    def test_that_only_client_admins_can_create_property(self):
-        """Only client admins who currently have client companies can create
-        property"""
+    def test_that_ordinary_users_are_not_forbidden_from_creating(self):
+        """Property creation is open to every registered user."""
 
-        non_client_admin = UserFactory.create()
+        ordinary_user = UserFactory.create()
 
         post_request = self.factory.post(
             self.create_list_url, self.property_data, format='json')
-        force_authenticate(post_request, user=non_client_admin)
+        force_authenticate(post_request, user=ordinary_user)
         view = CreateAndListPropertyView.as_view()
         response = view(post_request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_client_admins_can_view__unpublished_property_that_they_own(self):
         """Client admins should be able to view a specific property
@@ -336,9 +338,9 @@ class PropertyViewTests(BaseTest):
         )
         self.assertEqual(response3.status_code, status.HTTP_200_OK)
 
-    def test_that_landville_staff_can_view_all_property(self):
+    def test_that_atterville_staff_can_view_all_property(self):
         """
-        LandVille staff should be able to view all
+        Atterville staff should be able to view all
         property regardless of any parameters
         """
 
@@ -361,25 +363,22 @@ class PropertyViewTests(BaseTest):
         response = view(request, slug=self.property11.slug)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_client_admins_should_have_client_before_they_can_create_property(
+    def test_users_without_companies_can_still_create_property(
             self):
-        """Client admins should have the role `CA` and they should also have
-        an employer before they can create property """
+        """Users no longer need a client company to create listings."""
 
         post_request = self.factory.post(
             self.create_list_url, self.property_data, format='json')
 
-        # this user has role `CA` but has no employer relationship
-        fake_client = UserFactory.create()
-        fake_client.role = 'CA'
-        fake_client.save()
-        force_authenticate(post_request, user=fake_client)
+        solo_user = UserFactory.create()
+        solo_user.save()
+        force_authenticate(post_request, user=solo_user)
         view = CreateAndListPropertyView.as_view()
         response = view(post_request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_that_landville_staff_can_update_property(self):
-        """LandVille staff should be able to update a property"""
+    def test_that_atterville_staff_can_update_property(self):
+        """Atterville staff should be able to update a property"""
 
         url = reverse('property:single_property', args=[self.property11.slug])
 
@@ -400,9 +399,9 @@ class PropertyViewTests(BaseTest):
             response.data.get('data')['property']['title'],
             'Updated Super Lot')
 
-    def test_landville_staff_cannot_delete_property_that_is_already_deleted(
+    def test_atterville_staff_cannot_delete_property_that_is_already_deleted(
             self):
-        """Because LandVille staff can view property that is already deleted,
+        """Because Atterville staff can view property that is already deleted,
         they should not be able to delete that property again. """
 
         view = PropertyDetailView.as_view()
@@ -504,9 +503,9 @@ class PropertyViewTests(BaseTest):
 
     @patch('utils.media_handlers.uploader.destroy')
     @patch('utils.media_handlers.delete_resources')
-    def test_that_landville_staff_can_delete_images_and_video_for_property(
+    def test_that_atterville_staff_can_delete_images_and_video_for_property(
             self, mock_delete_ressources, mock_destroy):
-        """LandVille staff should be able to delete images and video for
+        """Atterville staff should be able to delete images and video for
         listed property"""
         url = reverse('property:delete_cloudinary_resource', args=[
                       self.dummy_property.slug])
@@ -535,7 +534,7 @@ class PropertyViewTests(BaseTest):
 
         dummy_property = PropertyFactory.create(
             video='http://www.videos.com/yeah',
-            client=self.client1)
+            owner=self.user1)
 
         url = reverse('property:delete_cloudinary_resource', args=[
                       dummy_property.slug])
@@ -1036,7 +1035,7 @@ class TestEnquiryViews(BaseTest):
         force_authenticate(get_enquiry, user=self.user3)
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
-        self.assertIn('we-love-landville-we-love-landville',
+        self.assertIn('we-love-atterville-we-love-atterville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
@@ -1083,7 +1082,7 @@ class TestEnquiryViews(BaseTest):
         view = PropertyEnquiryDetailView.as_view()
         up_res = view(update_enquiry, enquiry_id=enquiry_id)
         # lets now check if the new message is contained in the response
-        self.assertIn('We are from Landville', str(up_res.data))
+        self.assertIn('We are from Atterville', str(up_res.data))
         self.assertEqual(up_res.status_code, status.HTTP_200_OK)
 
     def test_user_can_get_all_his_enquiries(self):
@@ -1102,10 +1101,10 @@ class TestEnquiryViews(BaseTest):
         self.assertEqual(len(get_response.data['results']), 0)
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
-    def test_landville_admin_can_be_able_to_get_all_records(self):
+    def test_atterville_admin_can_be_able_to_get_all_records(self):
         """
-        test landville admin can be able to get all enquiries
-        not that since he is a landville admin, he can be able to get
+        test atterville admin can be able to get all enquiries
+        not that since he is a atterville admin, he can be able to get
         all the enquiries even the one posted in the propertyenquiry factory
          """
         get_enquiry = self.factory.get(
@@ -1137,8 +1136,8 @@ class TestEnquiryViews(BaseTest):
         self.assertEqual(len(get_response.data['results']), 0)
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
-    def test_landville_admin_can_be_able_to_get_one_one_enquiry(self):
-        """ test landville admin can able to get one enquiry """
+    def test_atterville_admin_can_be_able_to_get_one_one_enquiry(self):
+        """ test atterville admin can able to get one enquiry """
 
         slug = self.property11.slug
 
@@ -1157,7 +1156,7 @@ class TestEnquiryViews(BaseTest):
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
 
-        self.assertIn('we-love-landville-we-love-landville',
+        self.assertIn('we-love-atterville-we-love-atterville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
@@ -1194,6 +1193,6 @@ class TestEnquiryViews(BaseTest):
         force_authenticate(get_enquiry, user=self.user1)
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
-        self.assertIn('we-love-landville-we-love-landville',
+        self.assertIn('we-love-atterville-we-love-atterville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)

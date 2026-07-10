@@ -31,9 +31,9 @@ class BaseTest(APITestCase):
             client_admin=self.user1, approval_status='approved')
         self.client2 = ClientFactory.create(client_admin=self.user2)
 
-        self.property1 = PropertyFactory.create(client=self.client1)
+        self.property1 = PropertyFactory.create(owner=self.user1)
         self.property1.soft_delete()
-        self.property11 = PropertyFactory.create(client=self.client1)
+        self.property11 = PropertyFactory.create(owner=self.user1)
         self.review1 = PropertyReviewFactory(
             reviewer=self.user1, target_property=self.property1)
         self.enquiry1 = PropertyEnquiryFactory(enquiry_id='this enquiry',
@@ -43,18 +43,18 @@ class BaseTest(APITestCase):
             requester=self.user1, target_property=self.property1)
 
         self.property2 = PropertyFactory.create(
-            client=self.client2, title='HardCoded Title Block',
+            owner=self.user2, title='HardCoded Title Block',
             is_published=True)
 
         self.property4 = PropertyFactory.create(
-            client=self.client2,
+            owner=self.user2,
             title='HardCoded Title Block',
             is_published=True)
-        self.property3 = PropertyFactory.create(client=self.client2)
+        self.property3 = PropertyFactory.create(owner=self.user2)
         self.property_no_images = PropertyFactory.create(
-            client=self.client2, image_others=[], video=None)
+            owner=self.user2, image_others=[], video=None)
 
-        self.property3 = PropertyFactory.create(client=self.client2,
+        self.property3 = PropertyFactory.create(owner=self.user2,
                                                 video='https//:ardomvs.com')
         self.buyerpropertylist = BuyerPropertyListFactory.create(
             buyer=self.buyer1, listed_property=self.property2)
@@ -62,15 +62,15 @@ class BaseTest(APITestCase):
             "title": self.property2.title,
             "address": json.dumps(self.property2.address),
             "coordinates": json.dumps(self.property2.coordinates),
-            "client": self.client1.pk,
+            "listing_type": "S",
+            "property_type": "H",
             "description": self.property2.description,
             "price": self.property2.price,
             "lot_size": self.property2.lot_size,
-            "image_main": self.property2.image_main,
-            "purchase_plan": self.property2.purchase_plan
+            "image_main": self.property2.image_main
         }
         self.property5 = PropertyFactory.create(
-            client=self.client2,
+            owner=self.user2,
             address={
                 "City": "Lagos",
                 "State": "Greater Lagos",
@@ -81,7 +81,7 @@ class BaseTest(APITestCase):
             video='https//:ardomvideos4.com')
 
         self.property6 = PropertyFactory.create(
-            client=self.client2,
+            owner=self.user2,
             address={
                 "City": "Lagos",
                 "State": "Greater Lagos",
@@ -92,24 +92,24 @@ class BaseTest(APITestCase):
             video='https//:ardomvideo5.com')
 
         self.enquiry_data = {
-            "enquiry_id": "we-love-landville-we-love-landville",
+            "enquiry_id": "we-love-atterville-we-love-atterville",
             "visit_date": "2030-09-03T00:00:00.000Z",
             "message": "I love this propery"
         }
 
         self.enquiry_data_update = {
 
-            "enquiry_id": "we-love-landville-we-love-landville",
+            "enquiry_id": "we-love-atterville-we-love-atterville",
             "visit_date": "2030-09-03T00:00:00.000Z",
-            "message": "We are from Landville"
+            "message": "We are from Atterville"
 
         }
 
         self.enquiry_with_past_date = {
 
-            "enquiry_id": "we-love-landville-we-love-landville",
+            "enquiry_id": "we-love-atterville-we-love-atterville",
             "visit_date": "1990-09-03T00:00:00.000Z",
-            "message": "We are from Landville"
+            "message": "We are from Atterville"
 
         }
 
@@ -139,7 +139,7 @@ class BaseTest(APITestCase):
             '"description": "This is a dummy propery. Duh",'
             '"bedrooms": null, "bathrooms": null, "garages": null,'
             '"image_main": "https://www.dope.image/main",'
-            '"purchase_plan": "I", "client": 1}]}}}')
+            '"listing_type": "S", "owner": 1}]}}}')
 
         self.cloudinary_image_url1, self.cloudinary_image_url2 = [
             f'http://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/v1560508753/s3nitpim2sxydceg8zjy.jpg',  # noqa

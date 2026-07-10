@@ -1,10 +1,10 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 
 from utils.models import BaseAbstractModel
 from utils.managers import CustomQuerySet, PropertyQuery, PropertyEnquiryQuery
-from authentication.models import User, Client
+from authentication.models import User
 from utils.slug_generator import generate_unique_slug
 import uuid
 
@@ -12,34 +12,122 @@ import uuid
 # assiging this as a global variable makes it easier to access it
 # and use it for validators in other areas. There is now only one place
 # to change if you want to alter this attribute.
-MAX_PROPERTY_IMAGE_COUNT = 15
+# 1 main image + 4 others = 5 photos per listing.
+MAX_PROPERTY_IMAGE_COUNT = 4
+
+
+class Amenity(BaseAbstractModel):
+    """A predefined, filterable amenity that a property can have."""
+
+    GROUP_CHOICES = (
+        ('U', 'UTILITIES'),
+        ('S', 'SECURITY'),
+        ('C', 'COMFORT'),
+        ('A', 'ACCESS'),
+        ('L', 'LAND'),
+    )
+
+    name = models.CharField(max_length=100, unique=True)
+    group = models.CharField(max_length=1, choices=GROUP_CHOICES)
+    icon = models.CharField(
+        max_length=50, blank=True, default='',
+        help_text='FontAwesome icon class, e.g. fa-wifi')
+    is_active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active_objects = CustomQuerySet.as_manager()
+
+    class Meta:
+        verbose_name_plural = 'amenities'
+        ordering = ['group', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class NearbyFeature(BaseAbstractModel):
+    """A predefined feature close to a property, e.g. a school or market."""
+
+    name = models.CharField(max_length=100, unique=True)
+    icon = models.CharField(
+        max_length=50, blank=True, default='',
+        help_text='FontAwesome icon class, e.g. fa-school')
+    is_active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active_objects = CustomQuerySet.as_manager()
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Property(BaseAbstractModel):
     """This class defines the Property model"""
 
-    PURCHASE_CHOICES = (
-        ('I', 'INSTALLMENTS'),
-        ('F', 'FULL PAYMENT')
+    LISTING_TYPES = (
+        ('R', 'RENT'),
+        ('S', 'SALE'),
     )
 
     PROPERTY_TYPES = (
-        ('B', 'BUILDING'),
-        ('E', 'EMPTY LOT'),
+        ('H', 'HOUSE'),
+        ('A', 'APARTMENT'),
+        ('L', 'LAND'),
+        ('C', 'COMMERCIAL'),
+        ('R', 'ROOM/SHARED'),
+    )
+
+    RENT_PERIODS = (
+        ('M', 'MONTHLY'),
+        ('Y', 'YEARLY'),
+    )
+
+    STATUS_CHOICES = (
+        ('AV', 'AVAILABLE'),
+        ('RE', 'RENTED'),
+        ('SO', 'SOLD'),
+    )
+
+    ROAD_DISTANCES = (
+        ('1', 'LESS THAN 500M'),
+        ('2', '500M TO 2KM'),
+        ('3', '2KM TO 5KM'),
+        ('4', 'MORE THAN 5KM'),
+    )
+
+    CITY_DISTANCES = (
+        ('1', 'LESS THAN 5KM'),
+        ('2', '5KM TO 20KM'),
+        ('3', '20KM TO 50KM'),
+        ('4', 'MORE THAN 50KM'),
+    )
+
+    NOISE_LEVELS = (
+        ('Q', 'QUIET'),
+        ('M', 'MODERATE'),
+        ('B', 'BUSY'),
     )
 
     title = models.CharField(max_length=255)
-    address = JSONField(encoder=DjangoJSONEncoder)
-    coordinates = JSONField(encoder=DjangoJSONEncoder)
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name='properties')
+    address = models.JSONField(encoder=DjangoJSONEncoder)
+    coordinates = models.JSONField(encoder=DjangoJSONEncoder)
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='properties')
+    listing_type = models.CharField(
+        max_length=1, choices=LISTING_TYPES, default='S')
     property_type = models.CharField(
-        max_length=1, choices=PROPERTY_TYPES, default='B')
+        max_length=1, choices=PROPERTY_TYPES, default='H')
+    rent_period = models.CharField(
+        max_length=1, choices=RENT_PERIODS, null=True, blank=True)
     description = models.TextField()
     list_date = models.DateField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
-    is_sold = models.BooleanField(default=False)
-    sold_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=2, choices=STATUS_CHOICES, default='AV')
+    closed_at = models.DateTimeField(null=True, blank=True)
     price = models.DecimalField(decimal_places=2, max_digits=14)
     bedrooms = models.IntegerField(null=True, blank=True)
     bathrooms = models.IntegerField(null=True, blank=True)
@@ -51,8 +139,17 @@ class Property(BaseAbstractModel):
     video = models.URLField(unique=True, blank=True, null=True)
     view_count = models.IntegerField(default=0)
     last_viewed = models.DateTimeField(null=True, blank=True)
-    purchase_plan = models.CharField(max_length=1, choices=PURCHASE_CHOICES)
     slug = models.SlugField(max_length=250, unique=True)
+    amenities = models.ManyToManyField(
+        Amenity, blank=True, related_name='properties')
+    nearby = models.ManyToManyField(
+        NearbyFeature, blank=True, related_name='properties')
+    distance_to_main_road = models.CharField(
+        max_length=1, choices=ROAD_DISTANCES, null=True, blank=True)
+    distance_to_city = models.CharField(
+        max_length=1, choices=CITY_DISTANCES, null=True, blank=True)
+    noise_level = models.CharField(
+        max_length=1, choices=NOISE_LEVELS, null=True, blank=True)
 
     objects = models.Manager()
     active_objects = PropertyQuery.as_manager()
@@ -73,8 +170,6 @@ class PropertyEnquiry(BaseAbstractModel):
 
     enquiry_id = models.CharField(
         max_length=100, blank=True, unique=True, default=uuid.uuid4)
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name='client')
     requester = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='enquiry_requester')
     target_property = models.ForeignKey(
@@ -133,8 +228,8 @@ class PropertyReview(BaseAbstractModel):
 
 class BuyerPropertyList(BaseAbstractModel):
     """
-    Model for buyers' property list. Contains
-    list of properties a buyer may be interested
+    Model for users' saved properties. Contains
+    the list of properties a user may be interested
     in.
     """
 
@@ -147,4 +242,4 @@ class BuyerPropertyList(BaseAbstractModel):
     active_objects = CustomQuerySet.as_manager()
 
     def __str__(self):
-        return 'Buyer list for: ' + str(self.buyer.email)
+        return 'Saved properties for: ' + str(self.buyer.email)

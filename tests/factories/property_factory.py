@@ -25,16 +25,17 @@ class PropertyFactory(factory.DjangoModelFactory):
     title = fake.word()
     address = address
     coordinates = coordinates
-    client = factory.SubFactory(ClientFactory)
+    owner = factory.SubFactory(UserFactory)
+    listing_type = 'S'
+    property_type = 'H'
     description = fake.sentences()
     list_date = now()
     price = 2452345234.43
     lot_size = 2345.435
     image_main = fake.url()
     image_others = [fake.url(), fake.url()]
-    purchase_plan = 'I'
     last_viewed = now()
-    is_sold = False
+    status = 'AV'
 
 
 class PropertyEnquiryFactory(factory.DjangoModelFactory):
@@ -43,7 +44,6 @@ class PropertyEnquiryFactory(factory.DjangoModelFactory):
     class Meta:
         model = PropertyEnquiry
     enquiry_id = fake.name()
-    client = factory.SubFactory(ClientFactory)
     requester = factory.SubFactory(UserFactory)
     target_property = factory.SubFactory(PropertyFactory)
     visit_date = fake.date_time_between(

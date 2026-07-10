@@ -1,0 +1,46 @@
+[
+  {
+    "model": "property.PropertyReview",
+    "pk": 1,
+    "fields": {
+      "is_deleted": false,
+      "comment": "Visited last weekend - the finishing is even better than the photos.",
+      "is_published": true,
+      "reviewer": 3,
+      "target_property": 1
+    }
+  },
+  {
+    "model": "property.PropertyReview",
+    "pk": 2,
+    "fields": {
+      "is_deleted": false,
+      "comment": "Landlord was responsive and the compound is very secure.",
+      "is_published": true,
+      "reviewer": 2,
+      "target_property": 2
+    }
+  },
+  {
+    "model": "property.PropertyReview",
+    "pk": 3,
+    "fields": {
+      "is_deleted": false,
+      "comment": "Beautiful home, the pool area is well maintained.",
+      "is_published": true,
+      "reviewer": 3,
+      "target_property": 7
+    }
+  },
+  {
+    "model": "property.PropertyReview",
+    "pk": 4,
+    "fields": {
+      "is_deleted": false,
+      "comment": "Good value for the location, close to the BRT stop.",
+      "is_published": true,
+      "reviewer": 2,
+      "target_property": 5
+    }
+  }
+]

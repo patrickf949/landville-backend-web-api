@@ -2,7 +2,6 @@
 
 from django.conf import settings
 import django.contrib.postgres.fields
-import django.contrib.postgres.fields.jsonb
 import django.core.serializers.json
 from django.db import migrations, models
 import django.db.models.deletion
@@ -28,9 +27,9 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('is_deleted', models.BooleanField(default=False)),
                 ('title', models.CharField(max_length=255)),
-                ('address', django.contrib.postgres.fields.jsonb.JSONField(
+                ('address', models.JSONField(
                     encoder=django.core.serializers.json.DjangoJSONEncoder)),
-                ('coordinates', django.contrib.postgres.fields.jsonb.JSONField(
+                ('coordinates', models.JSONField(
                     encoder=django.core.serializers.json.DjangoJSONEncoder)),
                 ('property_type', models.CharField(choices=[
                  ('B', 'BUILDING'), ('E', 'EMPTY LOT')], default='B', max_length=1)),

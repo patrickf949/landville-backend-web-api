@@ -13,12 +13,12 @@ class PropertySerializerTest(BaseTest):
             "title": self.property2.title,
             "address": self.property2.address,
             "coordinates": self.property2.coordinates,
-            "client": self.client1.pk,
+            "listing_type": "S",
             "description": "Description",
             "price": self.property2.price,
             "lot_size": self.property2.lot_size,
             "image_main": self.property2.image_main,
-            "purchase_plan": self.property2.purchase_plan
+            "property_type": "H"
         }
         serializer = PropertySerializer(data=data)
         self.assertTrue(serializer.is_valid())
@@ -115,7 +115,7 @@ class PropertySerializerTest(BaseTest):
         models are updated """
 
         data = self.property_update
-        data['client'] = self.property_no_images.client.pk
+        data['owner'] = self.property_no_images.owner.pk
         data['image_others'] = [
             "http://www.example.com", "http://www.uploaded.properly/"]
         data['address'] = '{"City": "Nam", "State": "Nim", "Street": "Nom" }'
@@ -127,7 +127,7 @@ class PropertySerializerTest(BaseTest):
         serializer = PropertySerializer(
             self.property_no_images, data=data, partial=True)
         serializer.is_valid()
-        data['client'] = self.property_no_images.client
+        data['owner'] = self.property_no_images.owner
         serializer.update(self.property_no_images, data)
         self.assertEqual(len(self.property_no_images.image_others), 2)
         self.assertEqual(self.property_no_images.video,

@@ -16,8 +16,8 @@ class PropertyJSONRenderer(JSONRenderer):
     def single_property_format(self, data):
         """When returning property, fields choices should be returned
         as human readable values.
-        For example, instead or returning `purchase_plan` as `I`,
-        we should return `Installments`"""
+        For example, instead or returning `listing_type` as `R`,
+        we should return `Rent`"""
 
         # We should only format responses. Because reqeusts don't have
         # the `id` we skip all requests
@@ -25,19 +25,21 @@ class PropertyJSONRenderer(JSONRenderer):
             instance = Property.objects.get(pk=data.get('id'))
             data['property_type'] = instance.get_property_type_display(
             ).title()
-            data['purchase_plan'] = instance.get_purchase_plan_display(
+            data['listing_type'] = instance.get_listing_type_display(
             ).title()
-            client = instance.client
-            client_data = {
-                'id': client.id,
-                'client_name': client.client_name,
-                'phone': client.phone,
-                'email': client.email,
-                'address': client.address,
-                'admin_email': client.client_admin.email,
-                'admin_id': client.client_admin.id
-            }
-            data['client'] = client_data
+            data['status'] = instance.get_status_display().title()
+            if instance.rent_period:
+                data['rent_period'] = instance.get_rent_period_display(
+                ).title()
+            if instance.noise_level:
+                data['noise_level'] = instance.get_noise_level_display(
+                ).title()
+            if instance.distance_to_main_road:
+                data['distance_to_main_road'] = \
+                    instance.get_distance_to_main_road_display().title()
+            if instance.distance_to_city:
+                data['distance_to_city'] = \
+                    instance.get_distance_to_city_display().title()
 
     def render(self, data, media_type=None, renderer_context=None):
         if isinstance(data, dict):
