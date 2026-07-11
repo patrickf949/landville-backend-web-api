@@ -94,7 +94,7 @@ class TransactionServices:
             'email': pay_data.get('email'),
             'firstname': pay_data.get('email'),
             'lastname': pay_data.get('email'),
-            'txRef': f'LANDVILLE-{datetime.datetime.now()}',
+            'txRef': f'ATTERVILLE-{datetime.datetime.now()}',
             'redirect_url': cls.redirect_url
         }
 
@@ -136,7 +136,7 @@ class TransactionServices:
             'lastname':
             pay_data.get('lastname'),
             'txRef':
-            f'LANDVILLE-{datetime.datetime.now()}',
+            f'ATTERVILLE-{datetime.datetime.now()}',
             'redirect_url':
             TransactionServices.redirect_url,
             'meta': [{
@@ -248,7 +248,7 @@ class TransactionServices:
             'email': user.email,
             'firstname': user.first_name,
             'lastname': user.last_name,
-            'txRef': f'LANDVILLE-{datetime.datetime.now()}'
+            'txRef': f'ATTERVILLE-{datetime.datetime.now()}'
         }
 
         if data['token'] is None:

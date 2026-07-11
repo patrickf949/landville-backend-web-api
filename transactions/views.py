@@ -159,12 +159,10 @@ class RetreiveTransactionsAPIView(generics.GenericAPIView):
     def get_queryset(self):
         """Get queryset based on type/role of user currently logged in"""
         if self.request.user.role == 'CA':
-            client_company = get_object_or_404(
-                Client, client_admin__pk=self.request.user.pk)
-            # return all the client property that have transactions
+            # return all of the user's own property that have transactions
             queryset = Property.active_objects.all_objects().filter(
-                transactions__target_property__client__pk=client_company.pk)\
-                .distinct()
+                transactions__target_property__owner__pk=self.request.user.pk
+            ).distinct()
         elif self.request.user.role == "LA":
             # return all property with transactions
             queryset = Property.active_objects.all_objects().filter(
@@ -449,7 +447,7 @@ class RetrieveDepositsApiView(ListAPIView):
         if the user is a buyer he gets his own deposit
         if the user is a client admin he get all deposit made for properties
         belonging to his company
-        if he is a Landville admin he gets all deposits
+        if he is a Atterville admin he gets all deposits
         """
 
         user = self.request.user

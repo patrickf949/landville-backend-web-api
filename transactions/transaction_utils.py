@@ -7,7 +7,7 @@ def save_deposit(purpose,
                  amount,
                  user,
                  property=None,
-                 description="LandVille trans"):
+                 description="Atterville trans"):
     """
     after a successfull payment , we save the deposit in the table with
     the type as purpose
@@ -18,7 +18,7 @@ def save_deposit(purpose,
         description (str, optional): [description].
         property_id (int, optional): if we are buying it's the
         property we are paying for otherwise it's null
-        Defaults to "LandVille trans".
+        Defaults to "Atterville trans".
     Returns:
         (tuple): deposit, transaction the deposit and
         the saving or transaction according to the purpose
