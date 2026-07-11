@@ -2,14 +2,13 @@
 from django.db import models
 from django.contrib.auth.models import (
     AbstractUser, BaseUserManager)
-from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
 from datetime import datetime, timedelta
 import jwt
 from utils.models import BaseAbstractModel
 from utils.managers import CustomQuerySet
 from django.conf import settings
-from fernet_fields import EncryptedTextField
+from encrypted_fields.fields import EncryptedTextField
 
 
 class UserManager(BaseUserManager):
@@ -83,14 +82,14 @@ class User(AbstractUser, BaseAbstractModel):
     """This class defines the User model"""
 
     USER_ROLES = (
-        ('LA', 'LANDVILLE ADMIN'),
+        ('LA', 'ATTERVILLE ADMIN'),
         ('CA', 'CLIENT ADMIN'),
         ('BY', 'BUYER'),
     )
 
     username = models.CharField(
         null=True, blank=True, max_length=100, unique=True)
-    card_info = JSONField(
+    card_info = models.JSONField(
         verbose_name='tokenized card details',
         encoder=DjangoJSONEncoder, default=dict
     )
@@ -143,7 +142,7 @@ class User(AbstractUser, BaseAbstractModel):
             'exp': int(token_expiry.strftime('%s'))
         }, settings.SECRET_KEY, algorithm='HS256')
 
-        return token.decode('utf-8')
+        return token
 
 
 class BlackList(BaseAbstractModel):
@@ -182,7 +181,7 @@ class UserProfile(BaseAbstractModel):
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone = models.CharField(max_length=17, null=True, blank=False)
-    address = JSONField(
+    address = models.JSONField(
         verbose_name='physical address',
         encoder=DjangoJSONEncoder, default=dict
     )
@@ -227,7 +226,7 @@ class Client(BaseAbstractModel):
     )
     phone = models.CharField(max_length=17, unique=True)
     email = models.EmailField(unique=True)
-    address = JSONField(
+    address = models.JSONField(
         verbose_name='physical address', encoder=DjangoJSONEncoder
     )
     objects = models.Manager()

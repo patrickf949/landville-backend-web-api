@@ -1,6 +1,6 @@
 from django.utils.datastructures import MultiValueDictKeyError
 import cloudinary.uploader as uploader
-from cloudinary.api import delete_resources, Error
+from cloudinary.api import GeneralError as Error, delete_resources
 from rest_framework.exceptions import ValidationError
 
 from property.validators import (

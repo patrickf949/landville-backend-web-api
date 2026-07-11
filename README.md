@@ -1,62 +1,95 @@
-[![CircleCI](https://circleci.com/gh/landvilleng/landville-backend-web-api.svg?style=svg&circle-token=0b67e7bdea3b38a5b4be3154613c500fb0ba12db)](https://circleci.com/gh/landvilleng/landville-backend-web-api) [![Coverage Status](https://coveralls.io/repos/github/landvilleng/landville-backend-web-api/badge.svg?branch=develop&t=8IKdIj)](https://coveralls.io/github/landvilleng/landville-backend-web-api?branch=develop)
-<a href="https://codeclimate.com/github/landvilleng/landville-backend-web-api/maintainability"><img src="https://api.codeclimate.com/v1/badges/6ff3cfebdbf6655c3da0/maintainability" /></a>
+[![CircleCI](https://circleci.com/gh/attervilleng/atterville-backend-web-api.svg?style=svg&circle-token=0b67e7bdea3b38a5b4be3154613c500fb0ba12db)](https://circleci.com/gh/attervilleng/atterville-backend-web-api) [![Coverage Status](https://coveralls.io/repos/github/attervilleng/atterville-backend-web-api/badge.svg?branch=develop&t=8IKdIj)](https://coveralls.io/github/attervilleng/atterville-backend-web-api?branch=develop)
+<a href="https://codeclimate.com/github/attervilleng/atterville-backend-web-api/maintainability"><img src="https://api.codeclimate.com/v1/badges/6ff3cfebdbf6655c3da0/maintainability" /></a>
 
-# landville-backend-web-api
+# atterville-backend-web-api
 
-Backend Repository for LandVille Project
+Backend Repository for the Atterville Project
 
 # Description
 
-- landVille is a simple mobile-enabled solution that helps people access real estate investing with ease and convenience. landVille provides users and investors with an intelligent and most predictive search tool for properties in Nigeria, access to saving models and financing, smart contract and documentation and Our technology has four basic value proposition: search capability for safe and most trusted trending properties, saving and access to financing, smart contract and documentation, credit rating tool
+- Atterville is a platform that connects people to properties and places. Anyone can list a property - for rent, for sale, or land - with photos, amenities, and location details. Seekers search, filter, view listings on a map, and chat directly with owners. Atterville does not handle payments; it exists purely to connect.
+
+> **Note:** internal module names and the `/atterville/adm/` admin URL retain the legacy name pending a separate internal rename.
+
+## Local setup (quick start)
+
+Create the local database and user (run in `psql` as a superuser):
+
+```sql
+CREATE USER atterville_admin WITH PASSWORD 'JI2kyz5ayMALhrKO4*GkACeF@0uY';
+CREATE DATABASE atterville_local OWNER atterville_admin;
+GRANT ALL PRIVILEGES ON DATABASE atterville_local TO atterville_admin;
+ALTER USER atterville_admin CREATEDB;
+\c atterville_local
+GRANT ALL ON SCHEMA public TO atterville_admin;
+```
+
+Then export the environment (or put it in a gitignored `.env`):
+
+```bash
+export DB_NAME=atterville_local
+export DB_USER=atterville_admin
+export DB_PASSWORD='JI2kyz5ayMALhrKO4*GkACeF@0uY'
+export DB_HOST=localhost
+export DB_PORT=5432
+export REDIS_URL=redis://localhost:6379   # required for chat + celery
+```
+
+Install, migrate, seed and run (ASGI server so websockets work):
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python load_fixtures.py            # amenity catalogue + demo listings
+daphne -b 0.0.0.0 -p 8000 atterville.asgi:application
+```
+
+Without `REDIS_URL` the chat falls back to an in-memory channel layer (fine for a single dev process).
 
 ## Documentation
 
 - List of endpoints exposed by the service
 
-| Method | Endpoint                                           | Description                                              |
-| ------ | -------------------------------------------------- | -------------------------------------------------------- |
-| POST   | /landville/adm/                                    | log in Admin                                             |
-| POST   | /api/v1/auth/register/                             | registers new users by email                             |
-| GET    | /api/v1/auth/verify/                               | activates a users account                                |
-| POST   | /api/v1/auth/login/                                | logs in a user by email                                  |
-| POST   | /api/v1/auth/google/                               | user signs in through google                             |
-| POST   | /api/v1/auth/twitter/                              | user signs in through twitter                            |
-| POST   | /api/v1/auth/facebook/                             | user signs in through facebook                           |
-| POST   | /api/v1/auth/client/                               | application for client company                           |
-| GET    | /api/v1/auth/clients/                              | Fetch all client companies                               |
-| POST   | /api/v1/auth/password-reset/                       | user gets a reset password link                          |
-| POST   | /api/v1/pay/card-pin/                              | initiate payment with local Nigerian cards, with PIN     |
-| POST   | /api/v1/pay/card-foreign/                          | initiate payment with foreign cards                      |
-| POST   | /api/v1/pay/validate-card/                         | validate payment with local Nigerian cards, with PIN     |
-| PATCH  | /api/v1/auth/password-reset/                       | user resets password                                     |
-| POST   | /api/v1/transcations/accounts                      | post account details by Client                           |
-| GET    | /api/v1/transcations/accounts                      | Get account details depending on User level              |
-| GET    | /api/v1/transcations/account/<account_number>      | Get a single account details entry                       |
-| PUT    | /api/v1/transcations/account/<account_number>      | Update a single account detail entry                     |
-| DELETE | /api/v1/transcations/account/<account_number>      | Delete a single account detail entry                     |
-| POST   | /api/v1/transactions/tokenized-card/               | Make payment with tokenized card                         |
-| GET    | /api/v1/properties/                                | get all property                                         |
-| POST   | /api/v1/properties/                                | create a property page                                   |
-| GET    | /api/v1/properties/get/<slug>/                     | get specific property                                    |
-| DELETE | /api/v1/properties/get/<slug>/                     | delete specific property                                 |
-| PATCH  | /api/v1/properties/get/<slug>/                     | update specific property                                 |
-| DELETE | /api/v1/properties/buyer-list/<slug>/              | remove property with slug from current user's buyer list |
-| POST   | /api/v1/properties/buyer-list/<slug>/              | add property with slug to current user's buyer list      |
-| GET    | /api/v1/properties/buyer-list/                     | get properties in current user's buyer list              |
-| GET    | /api/v1/properties/trending/?address=City          | get all trending properties in a particular location     |
-| PUT    | /api/v1/properties/enquiries/<enquiry_id>/         | Update a property Enquiry                                |
-| POST   | api/v1/propertis/enquiries/<property_slug>/create/ | Post a property enquiry                                  |
-| DELETE | api/v1/properties/enquiries/<enquiry_id>/          | Delete an enquiry                                        |
-| GET    | api/v1/properties/enquiries/all/                   | get all your enquiries                                   |
-| GET    | api/v1/properties/enquiries/<enquiry_id>/          | get one enquiry                                          |
-| DELETE | api/v1/properties/:slug/resource                   | delete a cloudinary resource                             |
-| GET    | api/v1/auth/profile/                               | gets a profile of the loggedin user                      |
-| PATCH  | api/v1/auth/profile/                               | edits a profile of the loggedin user                     |
-| GET    | api/v1/transactions/                               | get a users transaction details                          |
+| Method    | Endpoint                                        | Description                                            |
+| --------- | ----------------------------------------------- | ------------------------------------------------------ |
+| POST      | /atterville/adm/                                  | log in Admin (legacy URL)                              |
+| POST      | /api/v1/auth/register/                           | registers new users by email                           |
+| GET       | /api/v1/auth/verify/                             | activates a users account                              |
+| POST      | /api/v1/auth/login/                              | logs in a user by email                                |
+| POST      | /api/v1/auth/google/                             | user signs in through google                           |
+| POST      | /api/v1/auth/twitter/                            | user signs in through twitter                          |
+| POST      | /api/v1/auth/facebook/                           | user signs in through facebook                         |
+| POST      | /api/v1/auth/password-reset/                     | user gets a reset password link                        |
+| PATCH     | /api/v1/auth/password-reset/                     | user resets password                                   |
+| GET/PATCH | /api/v1/auth/profile/                            | get or edit the logged-in user's profile               |
+| GET       | /api/v1/properties/                              | list/search published listings (rich filters)         |
+| POST      | /api/v1/properties/                              | create a listing (any registered user)                |
+| GET       | /api/v1/properties/amenities/                    | amenity catalogue for forms and filters                |
+| GET       | /api/v1/properties/nearby-features/              | nearby-feature catalogue                               |
+| GET       | /api/v1/properties/\<slug\>/                     | get a specific listing                                 |
+| PATCH     | /api/v1/properties/\<slug\>/                     | update your listing                                    |
+| DELETE    | /api/v1/properties/\<slug\>/                     | delete your listing                                    |
+| PATCH     | /api/v1/properties/\<slug\>/status/              | mark your listing Available / Rented / Sold            |
+| DELETE    | /api/v1/properties/\<slug\>/resource             | delete a cloudinary resource                           |
+| GET       | /api/v1/properties/buyer-list/                   | get your saved properties                              |
+| POST      | /api/v1/properties/buyer-list/\<slug\>/          | save a property                                        |
+| DELETE    | /api/v1/properties/buyer-list/\<slug\>/          | remove a saved property                                |
+| GET       | /api/v1/properties/trending/?city=City           | trending properties in a location                      |
+| POST      | /api/v1/properties/enquiries/\<slug\>/create/    | post a property enquiry                                |
+| GET       | /api/v1/properties/enquiries/all/                | get all your enquiries                                 |
+| GET/PUT/DELETE | /api/v1/properties/enquiries/\<enquiry_id\>/ | manage one enquiry                                    |
+| GET       | /api/v1/chat/conversations/                      | your chat inbox                                        |
+| POST      | /api/v1/chat/conversations/start/\<slug\>/       | start (or reopen) a chat about a listing               |
+| GET/POST  | /api/v1/chat/conversations/\<id\>/messages/      | chat history / send a message (REST fallback)          |
+| POST      | /api/v1/chat/conversations/\<id\>/report/        | report a conversation                                  |
+| POST      | /api/v1/chat/conversations/\<id\>/block/         | block a conversation                                   |
+| WS        | /ws/chat/\<conversation_id\>/?token=\<jwt\>      | real-time text chat (Django Channels)                  |
+
+> Payments, bank accounts and client-company endpoints were removed: Atterville is a pure connection platform.
 
 ## API Documentation
 
-https://landville-backend-web-api.herokuapp.com/
+https://atterville-backend-web-api.herokuapp.com/
 
 The heroku link redirects direclty to our documentation With these documentation, One can be able to test all endpoint as mentioned above in a browser
 
@@ -86,7 +119,7 @@ The heroku link redirects direclty to our documentation With these documentation
 
 ### Getting Started
 
-- First clone the project to your local machine using `git clone https://github.com/landvilleng/landville-backend-web-api.git`
+- First clone the project to your local machine using `git clone https://github.com/attervilleng/atterville-backend-web-api.git`
 - Create a virtual environment using the following command : `python3 -m venv /path/to/new/virtual/environment`
 - Activate your virtual environment using `source (virtualenv name)/bin/activate`
 - Create a new branch from the develop branch using the command `git checkout -b your_branch_name`
@@ -105,7 +138,7 @@ The heroku link redirects direclty to our documentation With these documentation
   `$ redis-server`
 - Run worker:
   `` $ celery -A yourproject worker -l info` `` \* example
-  `$ celery -A landville worker -l info`
+  `$ celery -A atterville worker -l info`
 - Run command `python manage.py runserver` to start the project
 
 ### Run The Service
@@ -128,4 +161,4 @@ The heroku link redirects direclty to our documentation With these documentation
 ## Deployment
 
 - This project has been depolyed on heroku:
-  link(https://landville-backend-web-api.herokuapp.com/)
+  link(https://atterville-backend-web-api.herokuapp.com/)

@@ -1,11 +1,11 @@
 from django.db import models
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 
 
 class Term(models.Model):
     """Define behaviour and Properties of a Terms and Conditions Instance."""
 
-    details = RichTextField(blank=True, null=True)
+    details = CKEditor5Field(blank=True, null=True)
     last_updated_at = models.DateField(auto_now=True)
 
     class Meta:

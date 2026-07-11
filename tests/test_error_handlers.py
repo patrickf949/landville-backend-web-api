@@ -21,7 +21,7 @@ class TestErrorHandler(APITestCase):
                    "have been removed, "
                    "had its name changed, or is temporarily unavailable. "
                    "Please check the documentation here : "
-                   "https://landville-backend-web-api.herokuapp.com/ "
+                   "/api/v1/documentation/ "
                    "and try again later.")
         self.assertEquals(response.json().get('message'), message)
         self.assertJSONEqual(force_text(response.content),

@@ -4,7 +4,7 @@ from tests.utils.utils import TestUtils
 from tempfile import NamedTemporaryFile
 from unittest.mock import patch, Mock
 from django.test.client import encode_multipart
-from cloudinary.api import Error
+from cloudinary.api import GeneralError as Error
 from django.conf import settings
 
 

@@ -88,7 +88,7 @@ class UserRegistrationTest(BaseTest):
         self.assertIsNotNone(response.data["errors"]["role"])
 
     def test_user_should_not_register_as_admin(self):
-        """Users should not be able to register as LandVille admins"""
+        """Users should not be able to register as Atterville admins"""
 
         data = self.new_user
         data['role'] = 'LA'
