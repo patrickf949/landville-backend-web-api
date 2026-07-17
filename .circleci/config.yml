@@ -1,4 +1,4 @@
-# Python CircleCI 2.0 Atterville configuration file
+# Python CircleCI 2.0 LandVille configuration file
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 
 version: 2
@@ -12,7 +12,7 @@ jobs:
 
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-    working_directory: ~/atterville-backend-web-api
+    working_directory: ~/landville-backend-web-api
 
     steps:
       - checkout
@@ -54,7 +54,7 @@ jobs:
           command: |
             . venv/bin/activate
             pip install -r requirements.txt
-            coverage run --source='authentication/,property/,utils/,pages/,chat/,atterville/' manage.py test && coverage report
+            coverage run --source='authentication/,property/,utils/,pages/,chat/,landville/' manage.py test && coverage report
             COVERALLS_REPO_TOKEN=${REPO_TOKEN} coveralls
 
       - store_artifacts:
