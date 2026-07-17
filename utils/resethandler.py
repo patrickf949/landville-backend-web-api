@@ -78,7 +78,7 @@ class ResetHandler:
         domain = os.environ.get('FRONTEND_URL')
 
         payload = {
-            "subject": "Reset your Atterville Password",
+            "subject": "Reset your LandVille Password",
             "recipient": [to_email],
             "text_body": "password_reset.html",
             "html_body": "password_reset.html",
