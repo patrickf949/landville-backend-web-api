@@ -2,7 +2,7 @@
 import pytest
 from channels.testing import WebsocketCommunicator
 
-from atterville.asgi import application
+from landville.asgi import application
 from chat.models import Conversation
 from tests.factories.authentication_factory import UserFactory
 from tests.factories.property_factory import PropertyFactory

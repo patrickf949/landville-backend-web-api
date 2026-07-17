@@ -92,24 +92,24 @@ class BaseTest(APITestCase):
             video='https//:ardomvideo5.com')
 
         self.enquiry_data = {
-            "enquiry_id": "we-love-atterville-we-love-atterville",
+            "enquiry_id": "we-love-landville-we-love-landville",
             "visit_date": "2030-09-03T00:00:00.000Z",
             "message": "I love this propery"
         }
 
         self.enquiry_data_update = {
 
-            "enquiry_id": "we-love-atterville-we-love-atterville",
+            "enquiry_id": "we-love-landville-we-love-landville",
             "visit_date": "2030-09-03T00:00:00.000Z",
-            "message": "We are from Atterville"
+            "message": "We are from LandVille"
 
         }
 
         self.enquiry_with_past_date = {
 
-            "enquiry_id": "we-love-atterville-we-love-atterville",
+            "enquiry_id": "we-love-landville-we-love-landville",
             "visit_date": "1990-09-03T00:00:00.000Z",
-            "message": "We are from Atterville"
+            "message": "We are from LandVille"
 
         }
 

@@ -338,9 +338,9 @@ class PropertyViewTests(BaseTest):
         )
         self.assertEqual(response3.status_code, status.HTTP_200_OK)
 
-    def test_that_atterville_staff_can_view_all_property(self):
+    def test_that_landville_staff_can_view_all_property(self):
         """
-        Atterville staff should be able to view all
+        LandVille staff should be able to view all
         property regardless of any parameters
         """
 
@@ -377,8 +377,8 @@ class PropertyViewTests(BaseTest):
         response = view(post_request, format='json')
         self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_that_atterville_staff_can_update_property(self):
-        """Atterville staff should be able to update a property"""
+    def test_that_landville_staff_can_update_property(self):
+        """LandVille staff should be able to update a property"""
 
         url = reverse('property:single_property', args=[self.property11.slug])
 
@@ -399,9 +399,9 @@ class PropertyViewTests(BaseTest):
             response.data.get('data')['property']['title'],
             'Updated Super Lot')
 
-    def test_atterville_staff_cannot_delete_property_that_is_already_deleted(
+    def test_landville_staff_cannot_delete_property_that_is_already_deleted(
             self):
-        """Because Atterville staff can view property that is already deleted,
+        """Because LandVille staff can view property that is already deleted,
         they should not be able to delete that property again. """
 
         view = PropertyDetailView.as_view()
@@ -503,9 +503,9 @@ class PropertyViewTests(BaseTest):
 
     @patch('utils.media_handlers.uploader.destroy')
     @patch('utils.media_handlers.delete_resources')
-    def test_that_atterville_staff_can_delete_images_and_video_for_property(
+    def test_that_landville_staff_can_delete_images_and_video_for_property(
             self, mock_delete_ressources, mock_destroy):
-        """Atterville staff should be able to delete images and video for
+        """LandVille staff should be able to delete images and video for
         listed property"""
         url = reverse('property:delete_cloudinary_resource', args=[
                       self.dummy_property.slug])
@@ -1035,7 +1035,7 @@ class TestEnquiryViews(BaseTest):
         force_authenticate(get_enquiry, user=self.user3)
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
-        self.assertIn('we-love-atterville-we-love-atterville',
+        self.assertIn('we-love-landville-we-love-landville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
@@ -1082,7 +1082,7 @@ class TestEnquiryViews(BaseTest):
         view = PropertyEnquiryDetailView.as_view()
         up_res = view(update_enquiry, enquiry_id=enquiry_id)
         # lets now check if the new message is contained in the response
-        self.assertIn('We are from Atterville', str(up_res.data))
+        self.assertIn('We are from LandVille', str(up_res.data))
         self.assertEqual(up_res.status_code, status.HTTP_200_OK)
 
     def test_user_can_get_all_his_enquiries(self):
@@ -1101,10 +1101,10 @@ class TestEnquiryViews(BaseTest):
         self.assertEqual(len(get_response.data['results']), 0)
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
-    def test_atterville_admin_can_be_able_to_get_all_records(self):
+    def test_landville_admin_can_be_able_to_get_all_records(self):
         """
-        test atterville admin can be able to get all enquiries
-        not that since he is a atterville admin, he can be able to get
+        test landville admin can be able to get all enquiries
+        not that since he is a landville admin, he can be able to get
         all the enquiries even the one posted in the propertyenquiry factory
          """
         get_enquiry = self.factory.get(
@@ -1136,8 +1136,8 @@ class TestEnquiryViews(BaseTest):
         self.assertEqual(len(get_response.data['results']), 0)
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
-    def test_atterville_admin_can_be_able_to_get_one_one_enquiry(self):
-        """ test atterville admin can able to get one enquiry """
+    def test_landville_admin_can_be_able_to_get_one_one_enquiry(self):
+        """ test landville admin can able to get one enquiry """
 
         slug = self.property11.slug
 
@@ -1156,7 +1156,7 @@ class TestEnquiryViews(BaseTest):
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
 
-        self.assertIn('we-love-atterville-we-love-atterville',
+        self.assertIn('we-love-landville-we-love-landville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
 
@@ -1193,6 +1193,6 @@ class TestEnquiryViews(BaseTest):
         force_authenticate(get_enquiry, user=self.user1)
         view2 = PropertyEnquiryDetailView.as_view()
         get_response = view2(get_enquiry, enquiry_id=enquiry_id)
-        self.assertIn('we-love-atterville-we-love-atterville',
+        self.assertIn('we-love-landville-we-love-landville',
                       str(get_response.data))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
