@@ -82,7 +82,7 @@ class User(AbstractUser, BaseAbstractModel):
     """This class defines the User model"""
 
     USER_ROLES = (
-        ('LA', 'ATTERVILLE ADMIN'),
+        ('LA', 'LANDVILLE ADMIN'),
         ('CA', 'CLIENT ADMIN'),
         ('BY', 'BUYER'),
     )

@@ -121,7 +121,7 @@ class ClientAdmin(admin.ModelAdmin):
             message = "Hey there,\n\nyour application was accepted, you may " \
                       "now start listing property"
             payload = {
-                "subject": "Atterville Application Status",
+                "subject": "LandVille Application Status",
                 "recipient": [obj.client_admin.email],
                 "text_body": "email/authentication/base_email.txt",
                 "html_body": "email/authentication/base_email.html",

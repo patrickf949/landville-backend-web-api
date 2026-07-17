@@ -1,4 +1,4 @@
-# Rebrand: role label 'LANDVILLE ADMIN' -> 'ATTERVILLE ADMIN'.
+# Rebrand: role label 'LANDVILLE ADMIN' -> 'LANDVILLE ADMIN'.
 # Choices-only change (no DB schema change); keeps migration state in sync
 # with the model so makemigrations --check passes.
 
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='role',
             field=models.CharField(
                 choices=[
-                    ('LA', 'ATTERVILLE ADMIN'),
+                    ('LA', 'LANDVILLE ADMIN'),
                     ('CA', 'CLIENT ADMIN'),
                     ('BY', 'BUYER'),
                 ],

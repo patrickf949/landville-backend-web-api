@@ -4,8 +4,8 @@
     "pk": 1,
     "fields": {
       "first_name": "Admin",
-      "last_name": "Atterville",
-      "email": "admin@atterville.com",
+      "last_name": "LandVille",
+      "email": "admin@landville.com",
       "username": "landadmin",
       "password": "pbkdf2_sha256$150000$lEnEKVAnd0w6$OFmBWql/XYZYF+3XIfjnabpLjBvpUXRVSPtDa8UkglI=",
       "role": "LA",

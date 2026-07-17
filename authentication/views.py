@@ -61,7 +61,7 @@ class RegistrationAPIView(generics.GenericAPIView):
         url = generate_validation_url(message)
 
         payload = {
-            "subject": "Welcome to Atterville, Verify your Account",
+            "subject": "Welcome to LandVille, Verify your Account",
             "recipient": [user_data["email"]],
             "text_body": "email/authentication/activate_account.txt",
             "html_body": "email/authentication/activate_account.html",
@@ -117,7 +117,7 @@ class EmailVerificationView(generics.GenericAPIView):
             url = generate_validation_url([request], user_id=user_id)
             user = User.objects.filter(id=user_id).first()
             payload = {
-                "subject": "Atterville, Verify your Account",
+                "subject": "LandVille, Verify your Account",
                 "recipient": [user.email],
                 "text_body": "email/authentication/activate_account.txt",
                 "html_body": "email/authentication/activate_account.html",
@@ -267,7 +267,7 @@ class ClientCreateView(generics.GenericAPIView, BaseUtils):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        subject = "Atterville client company review"
+        subject = "LandVille client company review"
         company = serializer.validated_data['client_name']
         admin = serializer.validated_data['client_admin']
 
@@ -290,7 +290,7 @@ class ClientCreateView(generics.GenericAPIView, BaseUtils):
         response = {
             "client_company": serializer.data,
             "message": "Your request to create a company has been "
-                       "received, please wait for approval from Atterville "
+                       "received, please wait for approval from LandVille "
                        "admin."
         }
 
@@ -614,11 +614,11 @@ class AddReasonView(View):
         messages.info(request, 'Client record has been updated')
         message = ''
         if status == "revoked":
-            message = 'Hey there,\n\nyour approval for Atterville was revoked'\
+            message = 'Hey there,\n\nyour approval for LandVille was revoked'\
                 ',for the following reason \n\n{}'                                                                                     .format(
                     notes)
         elif status == 'rejected':
-            message = 'Hey there,\n\nyour application for Atterville was not '\
+            message = 'Hey there,\n\nyour application for LandVille was not '\
                       'accepted\
             ,for the following reason \n\n{}'                                                                                                                                                                                    .format(notes)
         client = Client.objects.filter(client_admin=User.objects.filter(
@@ -626,12 +626,12 @@ class AddReasonView(View):
         client.approval_status = status
         client.save()
         self.notify_user(message, client.email)
-        return HttpResponseRedirect("/atterville/adm/authentication/client/")
+        return HttpResponseRedirect("/landville/adm/authentication/client/")
 
     def notify_user(self, message, email):
         """Send an email message to the provided email."""
         payload = {
-            "subject": "Atterville Application Status",
+            "subject": "LandVille Application Status",
             "recipient": [email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
