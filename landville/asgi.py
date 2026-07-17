@@ -3,7 +3,7 @@ import os
 
 import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'atterville.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'landville.settings')
 django.setup()
 
 from channels.routing import ProtocolTypeRouter, URLRouter  # noqa: E402

@@ -15,7 +15,7 @@
   },
   "formation": {
   },
-  "name": "atterville-backend-web-api",
+  "name": "landville-backend-web-api",
   "scripts": {
   },
   "stack": "heroku-18"

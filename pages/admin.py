@@ -6,7 +6,7 @@ class PagesAdmin(admin.ModelAdmin):
     """
     Taps into the Admin functionality of the Pages model.
 
-    Adds some custom behavior to what the Atterville Admin can do
+    Adds some custom behavior to what the LandVille Admin can do
     on the model.
 
     """

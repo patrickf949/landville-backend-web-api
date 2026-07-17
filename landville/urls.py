@@ -1,4 +1,4 @@
-"""atterville URL Configuration
+"""landville URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.1/topics/http/urls/
@@ -23,21 +23,21 @@ from django.views.generic.base import RedirectView
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Atterville",
+        title="LandVille",
         default_version='v1',
-        description="Atterville is a platform that connects people to properties \
+        description="LandVille is a platform that connects people to properties \
       and places. Anyone can list a property for rent or sale - including \
       land - and anyone can search, evaluate, and contact the lister \
-      directly. Atterville is purely a connection platform.",
+      directly. LandVille is purely a connection platform.",
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="info@atterville.com"),
+        contact=openapi.Contact(email="info@landville.com"),
     ),
     public=True,
     permission_classes=(AllowAny,),
 )
 
 urlpatterns = [
-    path('atterville/adm/', admin.site.urls),
+    path('landville/adm/', admin.site.urls),
     path('api/v1/documentation/',
          schema_view.with_ui('swagger', cache_timeout=0),
          name='api_documentation'),
@@ -68,5 +68,5 @@ urlpatterns = [
     path('api/v1/chat/', include(('chat.urls', 'chat'), namespace='chat')),
 ]
 
-handler404 = 'atterville.views.error_404'
+handler404 = 'landville.views.error_404'
 handler500 = 'utils.views.error_500'
