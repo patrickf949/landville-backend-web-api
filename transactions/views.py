@@ -447,7 +447,7 @@ class RetrieveDepositsApiView(ListAPIView):
         if the user is a buyer he gets his own deposit
         if the user is a client admin he get all deposit made for properties
         belonging to his company
-        if he is a Atterville admin he gets all deposits
+        if he is a LandVille admin he gets all deposits
         """
 
         user = self.request.user
