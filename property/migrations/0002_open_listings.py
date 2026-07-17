@@ -1,4 +1,4 @@
-# Atterville open-listings migration.
+# LandVille open-listings migration.
 # Property ownership moves from Client companies to individual users,
 # listings gain rent/sale + land support, a 5-photo cap, amenities,
 # and location-quality attributes.

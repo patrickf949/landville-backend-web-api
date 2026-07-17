@@ -109,27 +109,27 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
             f'{enquiring_property.title}'
         }
         payload1 = {
-            "subject": "Atterville Property Enquiry",
+            "subject": "LandVille Property Enquiry",
             "recipient": [user.email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
             "context": {
                 'title': "Hey there,",
                 'message': "You are receiving this because you have enquired "
-                           "about a property at Atterville. The owner will "
-                           "get back to you soon. Thanks for using Atterville"
+                           "about a property at LandVille. The owner will "
+                           "get back to you soon. Thanks for using LandVille"
             }
         }
         payload2 = {
-            "subject": "Atterville Property Enquiry",
+            "subject": "LandVille Property Enquiry",
             "recipient": [owner.email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
             "context": {
                 'title': "Hey there,",
                 'message': f"Hey {owner.first_name}, "
-                f"somebody is enquiring about your property at Atterville, "
-                f"kindly log into Atterville to see the enquiry"
+                f"somebody is enquiring about your property at LandVille, "
+                f"kindly log into LandVille to see the enquiry"
             }
         }
         send_email_notification.delay(payload1)
