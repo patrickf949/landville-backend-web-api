@@ -1,11 +1,11 @@
 Hi Admin,
 
-Please take time to login into your Landville account
+Please take time to login into your LandVille account
 to review the application for {{ company }} company which is currently pending.
 
 The application was initiated by {{ admin }}.
 
-Landville - When Tech & Trust meets Real Estate for Diaporans.
+LandVille - When Tech & Trust meets Real Estate for Diaporans.
 
 Nigerian.
 

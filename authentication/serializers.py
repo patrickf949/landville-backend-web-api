@@ -143,7 +143,7 @@ class GoogleAuthSerializer(serializers.Serializer):
         return {
             'token': new_user.token,
             'user_exists': False,
-            'message': 'Welcome to landville. ' + first_name +
+            'message': 'Welcome to LandVille. ' + first_name +
                        '. Ensure to edit your profile.'
         }
 
@@ -218,7 +218,7 @@ class FacebookAuthAPISerializer(serializers.Serializer):
         return {
             'token': new_user.token,
             'user_exists': False,
-            'message': 'Welcome to landville. ' + first_name +
+            'message': 'Welcome to LandVille. ' + first_name +
                        '. Ensure to edit your profile.'
         }
 
@@ -296,7 +296,7 @@ class TwitterAuthAPISerializer(serializers.Serializer):
         return {
             'token': new_user.token,
             'user_exists': False,
-            'message': 'Welcome to landville. ' + first_name +
+            'message': 'Welcome to LandVille. ' + first_name +
                        '. Ensure to edit your profile.'
         }
 

@@ -4,7 +4,7 @@ from authentication.views import (
     RegistrationAPIView, EmailVerificationView,
     ClientCreateView, GoogleAuthAPIView,
     FacebookAuthAPIView, TwitterAuthAPIView,
-    LoginAPIView, PasswordResetView, ProfileView,
+    LoginAPIView, PasswordResetView, ProfileView, PublicProfileView,
     AddReasonView, ClientReviewsView, ReviewDetailView,
     ReplyView, UserReviewsView, LogoutView,
     RetrieveUpdateDeleteClientView, ClientListView)
@@ -27,6 +27,8 @@ urlpatterns = [
         name="password-reset"),
     path("admin/notes/", AddReasonView.as_view(), name='add-notes'),
     path("profile/", ProfileView.as_view(), name="profile"),
+    path("users/<int:user_id>/", PublicProfileView.as_view(),
+         name="public-profile"),
     path('<int:client_id>/reviews/',
          ClientReviewsView.as_view(), name='add-reviews'),
     path('reviews/<int:pk>/', ReviewDetailView.as_view(),

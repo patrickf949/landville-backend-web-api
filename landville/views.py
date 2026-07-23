@@ -6,7 +6,7 @@ def error_404(request, exception):
                "have been removed, "
                "had its name changed, or is temporarily unavailable. "
                "Please check the documentation here : "
-               "https://landville-backend-web-api.herokuapp.com/ "
+               "/api/v1/documentation/ "
                "and try again later.")
     response = JsonResponse(data={"message": message})
     response.status_code = 404

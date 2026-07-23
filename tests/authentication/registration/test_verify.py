@@ -13,15 +13,20 @@ from rest_framework import status
 from tests.authentication.registration.test_base import BaseTest
 
 
+def safe_jwt_encode(payload, key, algorithm="HS256"):
+    token = jwt.encode(payload, key, algorithm=algorithm)
+    return token.decode('utf-8') if isinstance(token, bytes) else token
+
+
 class UserEmailVerificationTest(BaseTest):
     """Contains user email verification test methods."""
 
     @patch('utils.tasks.send_email_notification.delay')
     def test_should_verify_a_user_successfully(self, mock_email):
         """Tests if a user can be activated successfuly."""
-        valid_token = jwt.encode({"email": self.new_user["email"]},
-                                 settings.SECRET_KEY,
-                                 algorithm="HS256").decode("utf-8")
+        valid_token = safe_jwt_encode({"email": self.new_user["email"]},
+                                      settings.SECRET_KEY,
+                                      algorithm="HS256")
         valid_token += "~{}".format(str(self.user.id))
         mock_email.return_value = True
         self.client.post(
@@ -37,9 +42,9 @@ class UserEmailVerificationTest(BaseTest):
         mock_email.return_value = True
         data = {"email": self.user.email,
                 "exp": datetime.utcnow() - timedelta(hours=23)}
-        expired_token = jwt.encode(data,
-                                   settings.SECRET_KEY)\
-            .decode("utf-8")+"~"+str(self.user.id)
+        expired_token = safe_jwt_encode(data,
+                                       settings.SECRET_KEY,
+                                       algorithm="HS256") + "~" + str(self.user.id)
         response = self.client.get(
             self.verify_url+"?token={}".format(expired_token), format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -48,9 +53,10 @@ class UserEmailVerificationTest(BaseTest):
         """Test should not activate an account twice."""
         self.user.is_verified = True
         self.user.save()
-        token = jwt.encode(
+        token = safe_jwt_encode(
             {"email": self.user.email},
-            settings.SECRET_KEY).decode("utf-8")+"~1"
+            settings.SECRET_KEY,
+            algorithm="HS256") + "~1"
         response = self.client.get(self.verify_url+"?token={}".format(token),
                                    format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -60,9 +66,9 @@ class UserEmailVerificationTest(BaseTest):
         data = {
             "email": self.user.email,
             "exp": datetime.utcnow() - timedelta(hours=23)}
-        invalid_token = jwt.encode(data,
-                                   settings.SECRET_KEY)\
-            .decode("utf-8")+"1~"+str(self.user.id)
+        invalid_token = safe_jwt_encode(data,
+                                       settings.SECRET_KEY,
+                                       algorithm="HS256") + "1~" + str(self.user.id)
 
         response = self.client.get(
             self.verify_url+"?token="+invalid_token, format="json")

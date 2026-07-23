@@ -24,7 +24,9 @@ def generate_validation_url(data, user_id=None):
         },
         settings.SECRET_KEY,
         algorithm="HS256",
-    ).decode("utf-8")
+    )
+    if isinstance(encoded_jwt, bytes):
+        encoded_jwt = encoded_jwt.decode("utf-8")
     url = f"http://{get_current_site(data[0]).domain}/api/v1/" \
         f"auth/verify/?token={encoded_jwt}~{user_id}"
 

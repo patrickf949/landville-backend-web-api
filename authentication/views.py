@@ -15,7 +15,7 @@ from rest_framework import (
     status,
 )
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import (IsAuthenticated,
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,6 +33,8 @@ from authentication.serializers import (
     ProfileSerializer, TwitterAuthAPISerializer, RegistrationSerializer,
     LoginSerializer, ClientSerializer, ChangePasswordSerializer,
     ClientReviewSerializer, ReviewReplySerializer, BlackListSerializer)
+from property.models import Property
+from property.serializers import PropertySerializer
 from property.validators import validate_image
 from utils import BaseUtils
 from utils.media_handlers import CloudinaryResourceHandler
@@ -59,7 +61,7 @@ class RegistrationAPIView(generics.GenericAPIView):
         url = generate_validation_url(message)
 
         payload = {
-            "subject": "Welcome to Landville, Verify your Account",
+            "subject": "Welcome to LandVille, Verify your Account",
             "recipient": [user_data["email"]],
             "text_body": "email/authentication/activate_account.txt",
             "html_body": "email/authentication/activate_account.html",
@@ -103,10 +105,11 @@ class EmailVerificationView(generics.GenericAPIView):
     """Verify the users email."""
 
     def get(self, request):
-        domain = os.environ.get('FRONT_END_LOGIN_URL')
+        domain = os.environ.get('FRONT_END_LOGIN_URL') or os.environ.get('FRONT_END_URL') or 'http://localhost:4200'
         token, user_id = request.GET.get("token").split("~")
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY)
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=['HS256'])
         except jwt.exceptions.DecodeError:
             return HttpResponseRedirect(
                 domain + '?verified_status=invalid_link')  # noqa
@@ -114,7 +117,7 @@ class EmailVerificationView(generics.GenericAPIView):
             url = generate_validation_url([request], user_id=user_id)
             user = User.objects.filter(id=user_id).first()
             payload = {
-                "subject": "Landville, Verify your Account",
+                "subject": "LandVille, Verify your Account",
                 "recipient": [user.email],
                 "text_body": "email/authentication/activate_account.txt",
                 "html_body": "email/authentication/activate_account.html",
@@ -264,7 +267,7 @@ class ClientCreateView(generics.GenericAPIView, BaseUtils):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        subject = "Landville client company review"
+        subject = "LandVille client company review"
         company = serializer.validated_data['client_name']
         admin = serializer.validated_data['client_admin']
 
@@ -287,7 +290,7 @@ class ClientCreateView(generics.GenericAPIView, BaseUtils):
         response = {
             "client_company": serializer.data,
             "message": "Your request to create a company has been "
-                       "received, please wait for approval from landville "
+                       "received, please wait for approval from LandVille "
                        "admin."
         }
 
@@ -540,6 +543,49 @@ class ProfileView(generics.GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
+class PublicProfileView(generics.GenericAPIView):
+    """Public, read-only view of a user's profile and their active listings.
+
+    Implements US-1.3: anyone can view a user's public profile to see the
+    listings they currently have available. No authentication required and no
+    private fields (card info, security question/answer, next of kin, etc.)
+    are ever exposed.
+    """
+    permission_classes = (AllowAny,)
+
+    def get(self, request, user_id):
+        """Return public profile details plus the user's available listings."""
+        user_object = get_object_or_404(User, pk=user_id, is_active=True)
+        user_data = model_to_dict(
+            user_object,
+            fields=['id', 'first_name', 'last_name'])
+        user_data['date_joined'] = user_object.date_joined
+
+        profile = UserProfile.objects.filter(user=user_object).first()
+        profile_data = {}
+        if profile:
+            profile_data = model_to_dict(
+                profile,
+                fields=['image', 'bio', 'user_level'])
+
+        listings = Property.active_objects.all_published_and_available().filter(
+            owner=user_object).order_by('-list_date')
+        listings_data = PropertySerializer(listings, many=True).data
+
+        data = {
+            "data": {
+                "profile": {
+                    "user": user_data,
+                    **profile_data,
+                    "active_listings_count": listings.count(),
+                    "active_listings": listings_data,
+                }
+            },
+            "message": "Profile retrieved successfully"
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+
 class AddReasonView(View):
     """A view that enables admins to add a reason for the performed action."""
 
@@ -585,7 +631,7 @@ class AddReasonView(View):
     def notify_user(self, message, email):
         """Send an email message to the provided email."""
         payload = {
-            "subject": "Landville Application Status",
+            "subject": "LandVille Application Status",
             "recipient": [email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",

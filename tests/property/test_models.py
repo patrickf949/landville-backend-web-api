@@ -17,7 +17,7 @@ class PropertyModelTest(BaseTest):
         }
 
         property_slug = PropertyFactory.create(
-            client=self.client1, address=address)
+            owner=self.user1, address=address)
         property_slug.save()
         expected_slug = f'wall-street-{property_slug.title.lower()}'
         self.assertEqual(expected_slug, property_slug.slug)
@@ -61,4 +61,4 @@ class BuyerPropertyListTest(BaseTest):
         """
         email = self.buyer1.email
         self.assertEqual(
-            str(self.buyerpropertylist), 'Buyer list for: ' + email)
+            str(self.buyerpropertylist), 'Saved properties for: ' + email)

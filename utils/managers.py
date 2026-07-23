@@ -26,10 +26,10 @@ class CustomQuerySet(QuerySet):
 class PropertyQuery(CustomQuerySet):
     """Queryset that will be used by the property model"""
 
-    def for_client(self, client):
+    def for_owner(self, owner):
         """This query set returns all property that
-           belongs to a client, whether published or not"""
-        return self._active().filter(client=client)
+           belongs to a user, whether published or not"""
+        return self._active().filter(owner=owner)
 
     def by_slug(self, slug):
         """Return property with the passed slug"""
@@ -39,40 +39,40 @@ class PropertyQuery(CustomQuerySet):
         """Returns all property that is published"""
         return self._active().filter(is_published=True)
 
-    def all_sold(self):
-        """Return all property that is sold"""
-        return self._active().filter(is_sold=True)
+    def all_closed(self):
+        """Return all property that is rented out or sold"""
+        return self._active().filter(status__in=['RE', 'SO'])
 
-    def all_published_and_all_not_sold(self):
-        """ returns all published and unsold properties """
-        return self._active().filter(Q(is_published=True)) and self._active(
-        ).filter(Q(is_sold=False))
+    def all_published_and_available(self):
+        """ returns all published properties that are still available """
+        return self._active().filter(
+            Q(is_published=True) & Q(status='AV'))
 
-    def published_and_unsold_property_by_slug(self, slug):
+    def published_and_available_property_by_slug(self, slug):
         """
-        using a slug, return a property that is both unsold and unpublished
+        using a slug, return a property that is published and available
         """
-        return self.all_published_and_all_not_sold().filter(slug=slug)
+        return self.all_published_and_available().filter(slug=slug)
 
-    def all_published_and_all_by_client(self, client):
+    def all_published_and_all_by_owner(self, owner):
         """
         Return all property that are published and also all
-        property owned by the client
+        property owned by the user
         """
-        return self._active().filter(Q(is_published=True)) | self._active(
-        ).filter(Q(client=client))
+        return self._active().filter(
+            Q(is_published=True) | Q(owner=owner))
 
 
 class PropertyEnquiryQuery(CustomQuerySet):
     """ Queryset for the Enquiry property """
 
     def for_user(self, user):
-        """ returns all the queries made by a buyer """
+        """ returns all the enquiries made by a user """
         return self._active().filter(requester=user)
 
-    def for_client(self, client):
-        """ return all the queires made for a certain client """
-        return self._active().filter(client=client)
+    def for_owner(self, owner):
+        """ return all the enquiries made on a user's properties """
+        return self._active().filter(target_property__owner=owner)
 
 
 class ClientAccountQuery(CustomQuerySet):

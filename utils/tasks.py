@@ -25,8 +25,13 @@ def send_email_notification(body):
     text_body = render_to_string(body['text_body'], body['context'])
     html_body = render_to_string(body['html_body'], body['context'])
 
+    from django.conf import settings
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or "noreply@landville.com"
+    if '<' not in from_email:
+        from_email = f"Landville <{from_email}>"
+
     msg = EmailMultiAlternatives(subject=body['subject'],
-                                 from_email="noreply@landville.com",
+                                 from_email=from_email,
                                  to=body['recipient'],
                                  body=text_body)
     msg.attach_alternative(html_body, "text/html")

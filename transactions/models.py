@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from utils.models import BaseAbstractModel
 from utils.managers import CustomQuerySet, ClientAccountQuery, TransactionQuery
 from property.models import Property
@@ -46,7 +45,7 @@ class Deposit(BaseAbstractModel):
                                     blank=True,
                                     null=True)
     amount = models.DecimalField(decimal_places=2, max_digits=12)
-    references = JSONField(default=None, blank=False, null=False)
+    references = models.JSONField(default=None, blank=False, null=False)
     description = models.TextField(max_length=500)
     objects = models.Manager()
     active_objects = CustomQuerySet.as_manager()

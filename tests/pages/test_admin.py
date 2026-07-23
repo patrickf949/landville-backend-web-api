@@ -29,11 +29,11 @@ class AdminTest(TestCase):
 
     def test_should_not_add_new_term_instances(self):
         """Test that users cannot add new terms instances."""
-        self.assertEquals(
+        self.assertEqual(
             self.model_admin.has_add_permission(MockRequest), False)
 
     def test_should_not_delete_default_term_instance(self):
         """Test that users cannot delete the existing terms of service."""
-        self.assertEquals(self.
+        self.assertEqual(self.
                           model_admin.has_delete_permission(MockRequest),
                           False)

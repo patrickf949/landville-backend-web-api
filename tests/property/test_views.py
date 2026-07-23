@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.test.client import encode_multipart
 from rest_framework import status
 from rest_framework.test import force_authenticate
-from cloudinary.api import Error
+from cloudinary.api import GeneralError as Error
 from utils.media_handlers import CloudinaryResourceHandler
 from tests.property import BaseTest
 from tests.factories.authentication_factory import UserFactory
@@ -42,7 +42,7 @@ class PropertyViewTests(BaseTest):
             image_others=[self.cloudinary_image_url1,
                           self.cloudinary_image_url2],
             video=self.cloudinary_video_url1,
-            client=self.client1)
+            owner=self.user1)
         self.video_id = self.resource_handler.\
             get_cloudinary_public_id(self.dummy_property.video)
         self.image_id = self.resource_handler.\
@@ -172,9 +172,11 @@ class PropertyViewTests(BaseTest):
             res.data['errors'].get('video')),
             'Please provide a valid video file format.')
 
-    def test_that_users_who_are_not_client_admins_cannot_create_property(
+    def test_that_any_registered_user_can_create_property(
             self):
-        """Only client admins should be able to create property"""
+        """Any registered user should be allowed to create listings.
+        Without an uploaded main image the request is invalid, but it
+        must not be rejected for permission reasons."""
 
         self.user1.role = 'BY'
 
@@ -183,7 +185,7 @@ class PropertyViewTests(BaseTest):
         force_authenticate(request, user=self.user1)
         view = CreateAndListPropertyView.as_view()
         response = view(request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_that_users_who_are_not_logged_in_cannot_create_property(self):
         """Only client admins should be able to create property"""
@@ -192,7 +194,8 @@ class PropertyViewTests(BaseTest):
             self.create_list_url, self.property_data, format='json')
         view = CreateAndListPropertyView.as_view()
         response = view(request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(response.status_code, (
+            status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
 
     def test_that_client_admins_can_view_all_their_undeleted_property(self):
         """
@@ -244,18 +247,17 @@ class PropertyViewTests(BaseTest):
         # admins view all property in the database
         self.assertEqual(len(response.data.get('results')), all_property)
 
-    def test_that_only_client_admins_can_create_property(self):
-        """Only client admins who currently have client companies can create
-        property"""
+    def test_that_ordinary_users_are_not_forbidden_from_creating(self):
+        """Property creation is open to every registered user."""
 
-        non_client_admin = UserFactory.create()
+        ordinary_user = UserFactory.create()
 
         post_request = self.factory.post(
             self.create_list_url, self.property_data, format='json')
-        force_authenticate(post_request, user=non_client_admin)
+        force_authenticate(post_request, user=ordinary_user)
         view = CreateAndListPropertyView.as_view()
         response = view(post_request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_client_admins_can_view__unpublished_property_that_they_own(self):
         """Client admins should be able to view a specific property
@@ -361,22 +363,19 @@ class PropertyViewTests(BaseTest):
         response = view(request, slug=self.property11.slug)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_client_admins_should_have_client_before_they_can_create_property(
+    def test_users_without_companies_can_still_create_property(
             self):
-        """Client admins should have the role `CA` and they should also have
-        an employer before they can create property """
+        """Users no longer need a client company to create listings."""
 
         post_request = self.factory.post(
             self.create_list_url, self.property_data, format='json')
 
-        # this user has role `CA` but has no employer relationship
-        fake_client = UserFactory.create()
-        fake_client.role = 'CA'
-        fake_client.save()
-        force_authenticate(post_request, user=fake_client)
+        solo_user = UserFactory.create()
+        solo_user.save()
+        force_authenticate(post_request, user=solo_user)
         view = CreateAndListPropertyView.as_view()
         response = view(post_request, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_that_landville_staff_can_update_property(self):
         """LandVille staff should be able to update a property"""
@@ -535,7 +534,7 @@ class PropertyViewTests(BaseTest):
 
         dummy_property = PropertyFactory.create(
             video='http://www.videos.com/yeah',
-            client=self.client1)
+            owner=self.user1)
 
         url = reverse('property:delete_cloudinary_resource', args=[
                       dummy_property.slug])
@@ -565,12 +564,12 @@ class PropertyViewTests(BaseTest):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @patch('utils.media_handlers.uploader.upload')
     def test_we_get_appropriate_response_if_Cloudinary_fails_image_uploads(
-            self):
+            self, mock_upload):
         """If Cloudinary returns an error when uplaoding an image,
         we should return an appropriate response """
-        uploader = Mock()
-        uploader.upload.side_effects = Error
+        mock_upload.side_effect = Error("Mocked Cloudinary failure")
 
         temp_main_image = NamedTemporaryFile(suffix='.jpg')
 
@@ -857,7 +856,7 @@ class BuyerPropertyListTest(BaseTest):
         view = BuyerPropertyListView.as_view()
         response = view(request, self.property4.slug)
         self.assertIn(
-            ' has been successfully added to your buy list',
+            ' has been successfully added to your saved list',
             response.data['data'],
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -905,7 +904,7 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property2.slug)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get('errors'),
-                         self.property2.title + ' is already in your buy list')
+                         self.property2.title + ' is already in your saved list')
 
     def test_users_can_delete_already_existing_property_from_their_buying_list(self):  # noqa
         """
@@ -921,7 +920,7 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property2.slug)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('data'), self.property2.title  # noqa
-                         + ' has been successfully removed from your buy list')
+                         + ' has been successfully removed from your saved list')
 
     def test_users_cant_delete_non_existing_property_from_their_buying_list(self):  # noqa
         """
@@ -937,10 +936,15 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property4.slug)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get('errors'),
-                         self.property4.title + ' is not in your buy list')
+                         self.property4.title + ' is not in your saved list')
 
 
 class TestEnquiryViews(BaseTest):
+
+    def setUp(self):
+        super().setUp()
+        self.property11.is_published = True
+        self.property11.save()
 
     def test_user_can_be_able_to_create_an_enquiry(self):
         """
@@ -1083,7 +1087,7 @@ class TestEnquiryViews(BaseTest):
         view = PropertyEnquiryDetailView.as_view()
         up_res = view(update_enquiry, enquiry_id=enquiry_id)
         # lets now check if the new message is contained in the response
-        self.assertIn('We are from Landville', str(up_res.data))
+        self.assertIn('We are from LandVille', str(up_res.data))
         self.assertEqual(up_res.status_code, status.HTTP_200_OK)
 
     def test_user_can_get_all_his_enquiries(self):
@@ -1130,7 +1134,7 @@ class TestEnquiryViews(BaseTest):
             GET_ALL_ENQURIES_URL, format='json'
         )
 
-        force_authenticate(get_enquiry, user=self.user1)
+        force_authenticate(get_enquiry, user=self.user2)
         view2 = ListCreateEnquiryAPIView.as_view()
         get_response = view2(get_enquiry)
         # since no enquiries have been made so far lets assert the list is 0

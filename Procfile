@@ -1,5 +1,4 @@
-release: python manage.py makemigrations authentication property transactions
 release: python manage.py migrate
 
-web: gunicorn landville.wsgi
+web: daphne -b 0.0.0.0 -p $PORT landville.asgi:application
 worker: celery -A landville worker -l info

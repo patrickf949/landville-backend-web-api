@@ -3,56 +3,89 @@
 
 # landville-backend-web-api
 
-Backend Repository for LandVille Project
+Backend Repository for the LandVille Project
 
 # Description
 
-- landVille is a simple mobile-enabled solution that helps people access real estate investing with ease and convenience. landVille provides users and investors with an intelligent and most predictive search tool for properties in Nigeria, access to saving models and financing, smart contract and documentation and Our technology has four basic value proposition: search capability for safe and most trusted trending properties, saving and access to financing, smart contract and documentation, credit rating tool
+- LandVille is a platform that connects people to properties and places. Anyone can list a property - for rent, for sale, or land - with photos, amenities, and location details. Seekers search, filter, view listings on a map, and chat directly with owners. LandVille does not handle payments; it exists purely to connect.
+
+> **Note:** internal module names and the `/landville/adm/` admin URL retain the legacy name pending a separate internal rename.
+
+## Local setup (quick start)
+
+Create the local database and user (run in `psql` as a superuser):
+
+```sql
+CREATE USER landville_admin WITH PASSWORD 'mFl8KAd_SRoiAlfAQ9InaODi0_Ov';
+CREATE DATABASE landville_local OWNER landville_admin;
+GRANT ALL PRIVILEGES ON DATABASE landville_local TO landville_admin;
+ALTER USER landville_admin CREATEDB;
+\c landville_local
+GRANT ALL ON SCHEMA public TO landville_admin;
+```
+
+Then export the environment (or put it in a gitignored `.env`):
+
+```bash
+export DB_NAME=landville_local
+export DB_USER=landville_admin
+export DB_PASSWORD='mFl8KAd_SRoiAlfAQ9InaODi0_Ov'
+export DB_HOST=localhost
+export DB_PORT=5432
+export REDIS_URL=redis://localhost:6379   # required for chat + celery
+```
+
+Install, migrate, seed and run (ASGI server so websockets work):
+
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python load_fixtures.py            # amenity catalogue + demo listings
+daphne -b 0.0.0.0 -p 8000 landville.asgi:application
+```
+
+Without `REDIS_URL` the chat falls back to an in-memory channel layer (fine for a single dev process).
 
 ## Documentation
 
 - List of endpoints exposed by the service
 
-| Method | Endpoint                                           | Description                                              |
-| ------ | -------------------------------------------------- | -------------------------------------------------------- |
-| POST   | /landville/adm/                                    | log in Admin                                             |
-| POST   | /api/v1/auth/register/                             | registers new users by email                             |
-| GET    | /api/v1/auth/verify/                               | activates a users account                                |
-| POST   | /api/v1/auth/login/                                | logs in a user by email                                  |
-| POST   | /api/v1/auth/google/                               | user signs in through google                             |
-| POST   | /api/v1/auth/twitter/                              | user signs in through twitter                            |
-| POST   | /api/v1/auth/facebook/                             | user signs in through facebook                           |
-| POST   | /api/v1/auth/client/                               | application for client company                           |
-| GET    | /api/v1/auth/clients/                              | Fetch all client companies                               |
-| POST   | /api/v1/auth/password-reset/                       | user gets a reset password link                          |
-| POST   | /api/v1/pay/card-pin/                              | initiate payment with local Nigerian cards, with PIN     |
-| POST   | /api/v1/pay/card-foreign/                          | initiate payment with foreign cards                      |
-| POST   | /api/v1/pay/validate-card/                         | validate payment with local Nigerian cards, with PIN     |
-| PATCH  | /api/v1/auth/password-reset/                       | user resets password                                     |
-| POST   | /api/v1/transcations/accounts                      | post account details by Client                           |
-| GET    | /api/v1/transcations/accounts                      | Get account details depending on User level              |
-| GET    | /api/v1/transcations/account/<account_number>      | Get a single account details entry                       |
-| PUT    | /api/v1/transcations/account/<account_number>      | Update a single account detail entry                     |
-| DELETE | /api/v1/transcations/account/<account_number>      | Delete a single account detail entry                     |
-| POST   | /api/v1/transactions/tokenized-card/               | Make payment with tokenized card                         |
-| GET    | /api/v1/properties/                                | get all property                                         |
-| POST   | /api/v1/properties/                                | create a property page                                   |
-| GET    | /api/v1/properties/get/<slug>/                     | get specific property                                    |
-| DELETE | /api/v1/properties/get/<slug>/                     | delete specific property                                 |
-| PATCH  | /api/v1/properties/get/<slug>/                     | update specific property                                 |
-| DELETE | /api/v1/properties/buyer-list/<slug>/              | remove property with slug from current user's buyer list |
-| POST   | /api/v1/properties/buyer-list/<slug>/              | add property with slug to current user's buyer list      |
-| GET    | /api/v1/properties/buyer-list/                     | get properties in current user's buyer list              |
-| GET    | /api/v1/properties/trending/?address=City          | get all trending properties in a particular location     |
-| PUT    | /api/v1/properties/enquiries/<enquiry_id>/         | Update a property Enquiry                                |
-| POST   | api/v1/propertis/enquiries/<property_slug>/create/ | Post a property enquiry                                  |
-| DELETE | api/v1/properties/enquiries/<enquiry_id>/          | Delete an enquiry                                        |
-| GET    | api/v1/properties/enquiries/all/                   | get all your enquiries                                   |
-| GET    | api/v1/properties/enquiries/<enquiry_id>/          | get one enquiry                                          |
-| DELETE | api/v1/properties/:slug/resource                   | delete a cloudinary resource                             |
-| GET    | api/v1/auth/profile/                               | gets a profile of the loggedin user                      |
-| PATCH  | api/v1/auth/profile/                               | edits a profile of the loggedin user                     |
-| GET    | api/v1/transactions/                               | get a users transaction details                          |
+| Method    | Endpoint                                        | Description                                            |
+| --------- | ----------------------------------------------- | ------------------------------------------------------ |
+| POST      | /landville/adm/                                  | log in Admin (legacy URL)                              |
+| POST      | /api/v1/auth/register/                           | registers new users by email                           |
+| GET       | /api/v1/auth/verify/                             | activates a users account                              |
+| POST      | /api/v1/auth/login/                              | logs in a user by email                                |
+| POST      | /api/v1/auth/google/                             | user signs in through google                           |
+| POST      | /api/v1/auth/twitter/                            | user signs in through twitter                          |
+| POST      | /api/v1/auth/facebook/                           | user signs in through facebook                         |
+| POST      | /api/v1/auth/password-reset/                     | user gets a reset password link                        |
+| PATCH     | /api/v1/auth/password-reset/                     | user resets password                                   |
+| GET/PATCH | /api/v1/auth/profile/                            | get or edit the logged-in user's profile               |
+| GET       | /api/v1/properties/                              | list/search published listings (rich filters)         |
+| POST      | /api/v1/properties/                              | create a listing (any registered user)                |
+| GET       | /api/v1/properties/amenities/                    | amenity catalogue for forms and filters                |
+| GET       | /api/v1/properties/nearby-features/              | nearby-feature catalogue                               |
+| GET       | /api/v1/properties/\<slug\>/                     | get a specific listing                                 |
+| PATCH     | /api/v1/properties/\<slug\>/                     | update your listing                                    |
+| DELETE    | /api/v1/properties/\<slug\>/                     | delete your listing                                    |
+| PATCH     | /api/v1/properties/\<slug\>/status/              | mark your listing Available / Rented / Sold            |
+| DELETE    | /api/v1/properties/\<slug\>/resource             | delete a cloudinary resource                           |
+| GET       | /api/v1/properties/buyer-list/                   | get your saved properties                              |
+| POST      | /api/v1/properties/buyer-list/\<slug\>/          | save a property                                        |
+| DELETE    | /api/v1/properties/buyer-list/\<slug\>/          | remove a saved property                                |
+| GET       | /api/v1/properties/trending/?city=City           | trending properties in a location                      |
+| POST      | /api/v1/properties/enquiries/\<slug\>/create/    | post a property enquiry                                |
+| GET       | /api/v1/properties/enquiries/all/                | get all your enquiries                                 |
+| GET/PUT/DELETE | /api/v1/properties/enquiries/\<enquiry_id\>/ | manage one enquiry                                    |
+| GET       | /api/v1/chat/conversations/                      | your chat inbox                                        |
+| POST      | /api/v1/chat/conversations/start/\<slug\>/       | start (or reopen) a chat about a listing               |
+| GET/POST  | /api/v1/chat/conversations/\<id\>/messages/      | chat history / send a message (REST fallback)          |
+| POST      | /api/v1/chat/conversations/\<id\>/report/        | report a conversation                                  |
+| POST      | /api/v1/chat/conversations/\<id\>/block/         | block a conversation                                   |
+| WS        | /ws/chat/\<conversation_id\>/?token=\<jwt\>      | real-time text chat (Django Channels)                  |
+
+> Payments, bank accounts and client-company endpoints were removed: LandVille is a pure connection platform.
 
 ## API Documentation
 

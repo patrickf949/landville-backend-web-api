@@ -1,0 +1,560 @@
+[
+  {
+    "model": "property.Property",
+    "pk": 1,
+    "fields": {
+      "title": "Modern 3-Bedroom House in Lekki",
+      "address": {
+        "City": "Lagos",
+        "State": "Lagos",
+        "Street": "12 Admiralty Way, Lekki Phase 1"
+      },
+      "coordinates": {
+        "lat": "6.4478",
+        "lon": "3.4723"
+      },
+      "owner": 2,
+      "listing_type": "S",
+      "property_type": "H",
+      "rent_period": null,
+      "description": "Modern 3-Bedroom House in Lekki. A well-situated property in Lagos, Lagos. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 85000000,
+      "bedrooms": 3,
+      "bathrooms": 3,
+      "garages": 2,
+      "lot_size": 0.12,
+      "image_main": "https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2635038/pexels-photo-2635038.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "modern-3-bedroom-house-in-lekki",
+      "distance_to_main_road": "1",
+      "distance_to_city": "1",
+      "noise_level": "M",
+      "amenities": [
+        1,
+        3,
+        6,
+        7,
+        9,
+        10,
+        13,
+        14,
+        20,
+        21
+      ],
+      "nearby": [
+        4,
+        5,
+        6,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 2,
+    "fields": {
+      "title": "Serviced 2-Bedroom Apartment, Wuse II",
+      "address": {
+        "City": "Abuja",
+        "State": "FCT",
+        "Street": "7 Aminu Kano Crescent"
+      },
+      "coordinates": {
+        "lat": "9.0765",
+        "lon": "7.4712"
+      },
+      "owner": 3,
+      "listing_type": "R",
+      "property_type": "A",
+      "rent_period": "Y",
+      "description": "Serviced 2-Bedroom Apartment, Wuse II. A well-situated property in Abuja, FCT. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 3500000,
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "garages": null,
+      "lot_size": 0.05,
+      "image_main": "https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2724749/pexels-photo-2724749.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/1648776/pexels-photo-1648776.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "serviced-2-bedroom-apartment-wuse",
+      "distance_to_main_road": "1",
+      "distance_to_city": "1",
+      "noise_level": "B",
+      "amenities": [
+        1,
+        3,
+        4,
+        6,
+        10,
+        12,
+        13,
+        14,
+        22,
+        20
+      ],
+      "nearby": [
+        5,
+        6,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 3,
+    "fields": {
+      "title": "2 Acres of Farmland, Epe",
+      "address": {
+        "City": "Epe",
+        "State": "Lagos",
+        "Street": "Km 8 Epe-Ijebu Road"
+      },
+      "coordinates": {
+        "lat": "6.5841",
+        "lon": "3.9834"
+      },
+      "owner": 2,
+      "listing_type": "S",
+      "property_type": "L",
+      "rent_period": null,
+      "description": "2 Acres of Farmland, Epe. A well-situated plot of land in Epe, Lagos. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 12000000,
+      "bedrooms": null,
+      "bathrooms": null,
+      "garages": null,
+      "lot_size": 2.0,
+      "image_main": "https://images.pexels.com/photos/440731/pexels-photo-440731.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/158827/pexels-photo-158827.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/325944/pexels-photo-325944.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "two-acres-farmland-epe",
+      "distance_to_main_road": "2",
+      "distance_to_city": "3",
+      "noise_level": "Q",
+      "amenities": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "nearby": [
+        1,
+        3,
+        7
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 4,
+    "fields": {
+      "title": "Half-Plot Corner Piece, Kubwa",
+      "address": {
+        "City": "Kubwa",
+        "State": "FCT",
+        "Street": "Phase 4 Extension"
+      },
+      "coordinates": {
+        "lat": "9.1571",
+        "lon": "7.3316"
+      },
+      "owner": 3,
+      "listing_type": "S",
+      "property_type": "L",
+      "rent_period": null,
+      "description": "Half-Plot Corner Piece, Kubwa. A well-situated plot of land in Kubwa, FCT. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 6500000,
+      "bedrooms": null,
+      "bathrooms": null,
+      "garages": null,
+      "lot_size": 0.5,
+      "image_main": "https://images.pexels.com/photos/280221/pexels-photo-280221.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/2089698/pexels-photo-2089698.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "half-plot-corner-piece-kubwa",
+      "distance_to_main_road": "1",
+      "distance_to_city": "2",
+      "noise_level": "Q",
+      "amenities": [
+        25,
+        26,
+        29,
+        24
+      ],
+      "nearby": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 5,
+    "fields": {
+      "title": "Cosy Self-Contained Room, Yaba",
+      "address": {
+        "City": "Lagos",
+        "State": "Lagos",
+        "Street": "23 Herbert Macaulay Way"
+      },
+      "coordinates": {
+        "lat": "6.5095",
+        "lon": "3.3711"
+      },
+      "owner": 2,
+      "listing_type": "R",
+      "property_type": "R",
+      "rent_period": "Y",
+      "description": "Cosy Self-Contained Room, Yaba. A well-situated property in Lagos, Lagos. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 450000,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "garages": null,
+      "lot_size": 0.02,
+      "image_main": "https://images.pexels.com/photos/1454806/pexels-photo-1454806.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/2062426/pexels-photo-2062426.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/1428348/pexels-photo-1428348.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "cosy-self-contained-room-yaba",
+      "distance_to_main_road": "1",
+      "distance_to_city": "1",
+      "noise_level": "B",
+      "amenities": [
+        1,
+        3,
+        6,
+        11,
+        20
+      ],
+      "nearby": [
+        4,
+        6,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 6,
+    "fields": {
+      "title": "Warehouse Space, Apapa",
+      "address": {
+        "City": "Lagos",
+        "State": "Lagos",
+        "Street": "Creek Road, Apapa"
+      },
+      "coordinates": {
+        "lat": "6.4488",
+        "lon": "3.3590"
+      },
+      "owner": 3,
+      "listing_type": "R",
+      "property_type": "C",
+      "rent_period": "Y",
+      "description": "Warehouse Space, Apapa. A well-situated property in Lagos, Lagos. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 15000000,
+      "bedrooms": null,
+      "bathrooms": null,
+      "garages": null,
+      "lot_size": 0.8,
+      "image_main": "https://images.pexels.com/photos/236705/pexels-photo-236705.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/93400/pexels-photo-93400.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "warehouse-space-apapa",
+      "distance_to_main_road": "1",
+      "distance_to_city": "2",
+      "noise_level": "B",
+      "amenities": [
+        3,
+        4,
+        9,
+        10,
+        24,
+        20
+      ],
+      "nearby": [
+        6,
+        8,
+        7
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 7,
+    "fields": {
+      "title": "4-Bedroom Duplex with Pool, Gwarinpa",
+      "address": {
+        "City": "Abuja",
+        "State": "FCT",
+        "Street": "6th Avenue, Gwarinpa"
+      },
+      "coordinates": {
+        "lat": "9.1104",
+        "lon": "7.4165"
+      },
+      "owner": 2,
+      "listing_type": "S",
+      "property_type": "H",
+      "rent_period": null,
+      "description": "4-Bedroom Duplex with Pool, Gwarinpa. A well-situated property in Abuja, FCT. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 150000000,
+      "bedrooms": 4,
+      "bathrooms": 5,
+      "garages": 2,
+      "lot_size": 0.18,
+      "image_main": "https://images.pexels.com/photos/1396132/pexels-photo-1396132.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/2102587/pexels-photo-2102587.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2724748/pexels-photo-2724748.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/2635041/pexels-photo-2635041.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "four-bedroom-duplex-pool-gwarinpa",
+      "distance_to_main_road": "2",
+      "distance_to_city": "2",
+      "noise_level": "Q",
+      "amenities": [
+        1,
+        3,
+        5,
+        6,
+        7,
+        9,
+        10,
+        13,
+        17,
+        18,
+        21
+      ],
+      "nearby": [
+        4,
+        5,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 8,
+    "fields": {
+      "title": "Quarter-Acre Lakeview Plot, Jabi",
+      "address": {
+        "City": "Abuja",
+        "State": "FCT",
+        "Street": "Off Jabi Lake Road"
+      },
+      "coordinates": {
+        "lat": "9.0770",
+        "lon": "7.4250"
+      },
+      "owner": 3,
+      "listing_type": "R",
+      "property_type": "L",
+      "rent_period": "Y",
+      "description": "Quarter-Acre Lakeview Plot, Jabi. A well-situated plot of land in Abuja, FCT. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 2000000,
+      "bedrooms": null,
+      "bathrooms": null,
+      "garages": null,
+      "lot_size": 0.25,
+      "image_main": "https://images.pexels.com/photos/789380/pexels-photo-789380.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/417074/pexels-photo-417074.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "quarter-acre-lakeview-plot-jabi",
+      "distance_to_main_road": "2",
+      "distance_to_city": "1",
+      "noise_level": "Q",
+      "amenities": [
+        25,
+        26,
+        28
+      ],
+      "nearby": [
+        3,
+        2,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 9,
+    "fields": {
+      "title": "Furnished Studio Apartment, GRA",
+      "address": {
+        "City": "Port Harcourt",
+        "State": "Rivers",
+        "Street": "14 Forces Avenue, Old GRA"
+      },
+      "coordinates": {
+        "lat": "4.8106",
+        "lon": "7.0134"
+      },
+      "owner": 2,
+      "listing_type": "R",
+      "property_type": "A",
+      "rent_period": "Y",
+      "description": "Furnished Studio Apartment, GRA. A well-situated property in Port Harcourt, Rivers. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 1800000,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "garages": null,
+      "lot_size": 0.03,
+      "image_main": "https://images.pexels.com/photos/1918291/pexels-photo-1918291.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=800",
+        "https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "furnished-studio-apartment-gra",
+      "distance_to_main_road": "1",
+      "distance_to_city": "1",
+      "noise_level": "M",
+      "amenities": [
+        1,
+        3,
+        4,
+        6,
+        12,
+        13,
+        14,
+        20
+      ],
+      "nearby": [
+        5,
+        6,
+        8
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  },
+  {
+    "model": "property.Property",
+    "pk": 10,
+    "fields": {
+      "title": "Commercial Shop Space, Onitsha Main Market",
+      "address": {
+        "City": "Onitsha",
+        "State": "Anambra",
+        "Street": "Bright Street, Main Market"
+      },
+      "coordinates": {
+        "lat": "6.1667",
+        "lon": "6.7833"
+      },
+      "owner": 3,
+      "listing_type": "S",
+      "property_type": "C",
+      "rent_period": null,
+      "description": "Commercial Shop Space, Onitsha Main Market. A well-situated property in Onitsha, Anambra. Contact the owner directly through LandVille chat or an enquiry to arrange a visit.",
+      "is_published": true,
+      "status": "AV",
+      "price": 25000000,
+      "bedrooms": null,
+      "bathrooms": null,
+      "garages": null,
+      "lot_size": 0.04,
+      "image_main": "https://images.pexels.com/photos/264507/pexels-photo-264507.jpeg?auto=compress&cs=tinysrgb&w=800",
+      "image_others": [
+        "https://images.pexels.com/photos/375897/pexels-photo-375897.jpeg?auto=compress&cs=tinysrgb&w=800"
+      ],
+      "video": null,
+      "view_count": 0,
+      "slug": "commercial-shop-space-onitsha",
+      "distance_to_main_road": "1",
+      "distance_to_city": "1",
+      "noise_level": "B",
+      "amenities": [
+        3,
+        10,
+        11,
+        24
+      ],
+      "nearby": [
+        6,
+        8,
+        2
+      ],
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
+    }
+  }
+]

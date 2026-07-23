@@ -13,9 +13,9 @@ from authentication.models import User
 class TransactionServices:
     """A helper class for online payment services"""
 
-    rave_public_key = os.getenv('RAVE_PUBLIC_KEY')
-    rave_secret_key = os.getenv('RAVE_SECRET_KEY')
-    redirect_url = os.getenv('RAVE_REDIRECT_URL')
+    rave_public_key = os.getenv('RAVE_PUBLIC_KEY', '')
+    rave_secret_key = os.getenv('RAVE_SECRET_KEY', '')
+    redirect_url = os.getenv('RAVE_REDIRECT_URL', '')
 
     @classmethod
     def get_key(cls):
@@ -62,14 +62,15 @@ class TransactionServices:
         encrypt_3DES_key = cls.encrypt_data(hashed_sec_key, json.dumps(data))
 
         payload = {
-            'PBFPubKey': cls.rave_public_key,
-            'client': encrypt_3DES_key,
-            'alg': '3DES-24'
+            'client': encrypt_3DES_key
         }
 
-        endpoint = urljoin(os.getenv('RAVE_URL'),
-                           'flwv3-pug/getpaidx/api/charge')
-        headers = {'content-type': 'application/json'}
+        endpoint = urljoin(os.getenv('RAVE_URL', 'https://api.flutterwave.com/'),
+                           'v3/charges?type=card')
+        headers = {
+            'content-type': 'application/json',
+            'Authorization': f'Bearer {cls.rave_secret_key}'
+        }
         response = requests.post(
             endpoint, headers=headers, data=json.dumps(payload))
         return response.json()
@@ -83,18 +84,16 @@ class TransactionServices:
         :return: JSON response from rave endpoint
         """
         data = {
-            'PBFPubKey': cls.rave_public_key,
-            'cardno': pay_data.get('cardno'),
+            'card_number': pay_data.get('cardno'),
             'cvv': pay_data.get('cvv'),
-            'expirymonth': pay_data.get('expirymonth'),
-            'expiryyear': pay_data.get('expiryyear'),
+            'expiry_month': pay_data.get('expirymonth'),
+            'expiry_year': pay_data.get('expiryyear'),
             'currency': 'NGN',
             'country': pay_data.get('country', 'NG'),
             'amount': pay_data.get('amount'),
             'email': pay_data.get('email'),
-            'firstname': pay_data.get('email'),
-            'lastname': pay_data.get('email'),
-            'txRef': f'LANDVILLE-{datetime.datetime.now()}',
+            'fullname': f"{pay_data.get('firstname', '')} {pay_data.get('lastname', '')}".strip() or pay_data.get('email'),
+            'tx_ref': f'LANDVILLE-{datetime.datetime.now()}',
             'redirect_url': cls.redirect_url
         }
 
@@ -113,45 +112,27 @@ class TransactionServices:
         """
 
         data = {
-            'PBFPubKey':
-            cls.rave_public_key,
-            'cardno':
-            pay_data.get('cardno'),
-            'cvv':
-            pay_data.get('cvv'),
-            'expirymonth':
-            pay_data.get('expirymonth'),
-            'expiryyear':
-            pay_data.get('expiryyear'),
-            'currency':
-            'NGN',
-            'country':
-            pay_data.get('country', 'NG'),
-            'amount':
-            pay_data.get('amount'),
-            'email':
-            pay_data.get('email'),
-            'firstname':
-            pay_data.get('firstname'),
-            'lastname':
-            pay_data.get('lastname'),
-            'txRef':
-            f'LANDVILLE-{datetime.datetime.now()}',
-            'redirect_url':
-            TransactionServices.redirect_url,
-            'meta': [{
-                'metaname': 'save_card',
-                'metavalue': pay_data.get('save_card')
-            }, {
-                'metaname': 'purpose',
-                'metavalue': pay_data.get('purpose')
-            }, {
-                'metaname': 'property_id',
-                'metavalue': pay_data.get('property_id')
-            }]
+            'card_number': pay_data.get('cardno'),
+            'cvv': pay_data.get('cvv'),
+            'expiry_month': pay_data.get('expirymonth'),
+            'expiry_year': pay_data.get('expiryyear'),
+            'currency': 'NGN',
+            'country': pay_data.get('country', 'NG'),
+            'amount': pay_data.get('amount'),
+            'email': pay_data.get('email'),
+            'fullname': f"{pay_data.get('firstname', '')} {pay_data.get('lastname', '')}".strip() or pay_data.get('email'),
+            'tx_ref': f'LANDVILLE-{datetime.datetime.now()}',
+            'redirect_url': TransactionServices.redirect_url,
+            'meta': {
+                'save_card': pay_data.get('save_card'),
+                'purpose': pay_data.get('purpose'),
+                'property_id': pay_data.get('property_id')
+            }
         }
 
-        data.update(pay_data['auth_dict'])
+        if 'auth_dict' in pay_data:
+            # v3 expects authorization object
+            data['authorization'] = pay_data['auth_dict']
 
         return cls.rave_call(data)
 
@@ -165,14 +146,16 @@ class TransactionServices:
         :return: JSON response
         """
         data = {
-            'PBFPubKey': cls.rave_public_key,
-            'transaction_reference': flwref,
+            'flw_ref': flwref,
             'otp': otp
         }
 
-        endpoint = urljoin(os.getenv('RAVE_URL'),
-                           'flwv3-pug/getpaidx/api/validatecharge')
-        headers = {'content-type': 'application/json'}
+        endpoint = urljoin(os.getenv('RAVE_URL', 'https://api.flutterwave.com/'),
+                           'v3/validate-charge')
+        headers = {
+            'content-type': 'application/json',
+            'Authorization': f'Bearer {cls.rave_secret_key}'
+        }
         response = requests.post(
             endpoint, headers=headers, data=json.dumps(data))
         response_json = response.json()
@@ -182,20 +165,17 @@ class TransactionServices:
     @classmethod
     def verify_payment(cls, txref):
         """
-
         :param txref: the transaction reference number for the payment
         :return: AJSON response
         """
-        data = {
-            "txref": txref,
-            "SECKEY": cls.rave_secret_key
+        endpoint = urljoin(os.getenv('RAVE_URL', 'https://api.flutterwave.com/'),
+                           f'v3/transactions/verify_by_reference?tx_ref={txref}')
+        headers = {
+            'content-type': 'application/json',
+            'Authorization': f'Bearer {cls.rave_secret_key}'
         }
-        endpoint = urljoin(os.getenv('RAVE_URL'),
-                           'flwv3-pug/getpaidx/api/v2/verify')
-        headers = {'content-type': 'application/json'}
 
-        response = requests.post(
-            endpoint, headers=headers, data=json.dumps(data))
+        response = requests.get(endpoint, headers=headers)
         return response.json()
 
     @classmethod
@@ -206,23 +186,36 @@ class TransactionServices:
         verification
         :return: A message indicating success or otherwise of the operation
         """
-        email = verify_resp['data']['custemail']
-        save_card = verify_resp['data']['meta'][0]['metavalue']
-        card_number = verify_resp['data']['card']['last4digits']
-        embedtoken = verify_resp['data']['card']['card_tokens'][0]['embedtoken']  # noqa
-        card_brand = verify_resp['data']['card']['brand']
-        card_expiry = f"{verify_resp['data']['card']['expirymonth']}/" \
-            f"{verify_resp['data']['card']['expiryyear']}"
+        email = verify_resp.get('data', {}).get('customer', {}).get('email')
+        
+        # Safe extraction of meta fields
+        meta = verify_resp.get('data', {}).get('meta', {})
+        # v3 meta can be dict or list of dicts depending on endpoint
+        save_card_val = 0
+        if isinstance(meta, dict):
+            save_card_val = meta.get('save_card', 0)
+        elif isinstance(meta, list):
+            for m in meta:
+                if m.get('metaname') == 'save_card':
+                    save_card_val = m.get('metavalue', 0)
+                    break
+        
+        card_data = verify_resp.get('data', {}).get('card', {})
+        card_number = card_data.get('last_4digits', card_data.get('last4digits'))
+        embedtoken = card_data.get('token', '')
+        card_brand = card_data.get('issuer', card_data.get('brand', ''))
+        card_expiry = f"{card_data.get('expiry_month', card_data.get('expirymonth', ''))}/" \
+            f"{card_data.get('expiry_year', card_data.get('expiryyear', ''))}"
+            
         card_info = {
             'embedtoken': embedtoken,
             'card_number': f'*********{card_number}',
             'card_expiry': card_expiry,
             'card_brand': card_brand
-
         }
 
-        if verify_resp['data']['status'] == 'successful' \
-                and int(save_card) == 1:
+        if verify_resp.get('data', {}).get('status') == 'successful' \
+                and str(save_card_val) in ['1', 'true', 'True']:
             try:
                 user = User.active_objects.filter(email=email)
                 user.update(card_info=card_info)
@@ -230,6 +223,7 @@ class TransactionServices:
             except:  # noqa
                 message = '. Card details could not be saved. Try latter.'
             return message
+        return ''
 
     @classmethod
     def pay_with_saved_card(cls, user, amount):
@@ -241,14 +235,13 @@ class TransactionServices:
         """
         data = {
             'currency': 'NGN',
-            'SECKEY': cls.rave_secret_key,
             'token': user.card_info.get('embedtoken'),
             'country': 'NG',
             'amount': amount,
             'email': user.email,
-            'firstname': user.first_name,
-            'lastname': user.last_name,
-            'txRef': f'LANDVILLE-{datetime.datetime.now()}'
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'tx_ref': f'LANDVILLE-{datetime.datetime.now()}'
         }
 
         if data['token'] is None:
@@ -257,11 +250,19 @@ class TransactionServices:
                     'status_code': 400,
                     'status': 'You do not have a saved card'
                 }}
-        endpoint = urljoin(os.getenv('RAVE_URL'),
-                           'flwv3-pug/getpaidx/api/tokenized/charge')
-        headers = {'content-type': 'application/json'}
+                
+        endpoint = urljoin(os.getenv('RAVE_URL', 'https://api.flutterwave.com/'),
+                           'v3/tokenized-charges')
+        headers = {
+            'content-type': 'application/json',
+            'Authorization': f'Bearer {cls.rave_secret_key}'
+        }
 
         response = requests.post(
             endpoint, headers=headers, data=json.dumps(data)).json()
-        response['data']['status_code'] = 200
+        
+        # Ensure status code is bundled for existing views
+        if 'data' not in response:
+            response['data'] = {}
+        response['data']['status_code'] = 200 if response.get('status') == 'success' else 400
         return response

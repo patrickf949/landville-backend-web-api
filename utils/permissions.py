@@ -9,18 +9,27 @@ class ReadOnly(BasePermission):
 
 
 class CanEditProperty(BasePermission):
-    """Client admins should be able to edit property they own"""
+    """Only the owner of a listing (or an admin) can modify it."""
 
     def has_object_permission(self, request, view, obj):
 
         user = request.user
         if request.method in SAFE_METHODS:
             return True
-        if user.is_authenticated and user.role == 'CA':
-            return user == obj.client.client_admin
+        if user.is_authenticated and user == obj.owner:
+            return True
         if user.is_authenticated and user.role == 'LA':
             return True
         return False
+
+
+class IsOwnerOrReadOnly(BasePermission):
+    """Anyone can read; only the object's owner can write."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_authenticated and obj.owner == request.user
 
 
 class IsClientAdmin(BasePermission):

@@ -2,7 +2,6 @@ import datetime
 from datetime import datetime as dt
 from django.utils.timezone import now
 
-from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import (
     generics,
     status,
@@ -12,14 +11,17 @@ from rest_framework.parsers import (
     MultiPartParser,
 )
 from rest_framework.permissions import (
-    IsAuthenticated
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from property.filters import PropertyFilter
 from property.models import (
+    Amenity,
     BuyerPropertyList,
+    NearbyFeature,
     Property,
     PropertyEnquiry,
 )
@@ -28,17 +30,18 @@ from property.renderers import (
     PropertyJSONRenderer,
 )
 from property.serializers import (
+    AmenitySerializer,
     BuyerPropertyListSerializer,
+    NearbyFeatureSerializer,
     PropertyEnquirySerializer,
     PropertySerializer,
+    PropertyStatusSerializer,
 )
 from utils.media_handlers import CloudinaryResourceHandler
 from utils.permissions import (
     CanEditProperty,
-    IsBuyer,
-    IsClientAdmin,
     IsOwner,
-    ReadOnly,
+    IsBuyer,
 )
 from utils.tasks import send_email_notification
 
@@ -49,7 +52,7 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
     we first pass the slug as the argument to fetch the property
     """
     serializer_class = PropertyEnquirySerializer
-    permission_classes = (IsBuyer,)
+    permission_classes = (IsAuthenticated, IsBuyer)
     renderer_classes = (PropertyEnquiryJSONRenderer, )
 
     def get_queryset(self):
@@ -58,17 +61,13 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
         user = self.request.user
 
         if user.is_authenticated and user.role == 'LA':
-            # check if the user is a landville admin and return all records
-            # even soft deleted ones
+            # admins see all records, even soft deleted ones
             return PropertyEnquiry.objects.all()
 
-        if user.is_authenticated and user.role == 'CA':
-            # if the user is a client admin, return only his records
-            employer = user.employer.first()
-            return PropertyEnquiry.active_objects.for_client(client=employer)
-
-        # if the user is a buyer, return also only his enquiries
-        return PropertyEnquiry.active_objects.for_user(user=user)
+        # users see the enquiries they made and the enquiries
+        # made on their own listings
+        return (PropertyEnquiry.active_objects.for_user(user=user) |
+                PropertyEnquiry.active_objects.for_owner(owner=user))
 
     def post(self, request, property_slug):
         """
@@ -79,56 +78,59 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
         enquiry = request.data
 
         enquiring_property = Property. \
-            active_objects.published_and_unsold_property_by_slug(
+            active_objects.published_and_available_property_by_slug(
                 slug=property_slug).first()
 
         if enquiring_property is None:
             return Response({"errors": "we did not find the property"},
                             status=status.HTTP_404_NOT_FOUND)
-        for user_enquiry in self.get_queryset():
 
-            if user_enquiry.target_property.slug == enquiring_property.slug\
-                    and user_enquiry.is_resolved is False:
-                return Response({
-                    "errors": "enquiry for this property already exists"
-                }, status=status.HTTP_400_BAD_REQUEST)
+        if enquiring_property.owner == user:
+            return Response({
+                "errors": "you cannot enquire about your own property"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        existing = PropertyEnquiry.active_objects.for_user(user=user).filter(
+            target_property=enquiring_property, is_resolved=False)
+        if existing.exists():
+            return Response({
+                "errors": "enquiry for this property already exists"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.serializer_class(data=enquiry)
         serializer.is_valid(raise_exception=True)
 
         serializer.save(requester=user,
-                        client_id=enquiring_property.client.pk,
                         target_property=enquiring_property)
 
+        owner = enquiring_property.owner
         response = {
             "data": serializer.data,
-            "message": f'you have succefully enquired about '
-            f'{enquiring_property.title} Property owned by '
-            f'{enquiring_property.client}'
+            "message": f'you have successfully enquired about '
+            f'{enquiring_property.title}'
         }
         payload1 = {
-            "subject": "Landville Property Enquiry",
+            "subject": "LandVille Property Enquiry",
             "recipient": [user.email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
             "context": {
                 'title': "Hey there,",
                 'message': "You are receiving this because you have enquired "
-                           "about a property at Landville, a representative"
-                           " from the Client will get to you soon. Thanks "
-                           "for using Landville"
+                           "about a property at LandVille. The owner will "
+                           "get back to you soon. Thanks for using LandVille"
             }
         }
         payload2 = {
-            "subject": "Landville Property Enquiry",
-            "recipient": [enquiring_property.client.email],
+            "subject": "LandVille Property Enquiry",
+            "recipient": [owner.email],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
             "context": {
                 'title': "Hey there,",
-                'message': f"Hey {enquiring_property.client.client_name}, "
+                'message': f"Hey {owner.first_name}, "
                 f"somebody is enquiring about your property at LandVille, "
-                f"kindly log into Landville get to know about the enquiry"
+                f"kindly log into LandVille to see the enquiry"
             }
         }
         send_email_notification.delay(payload1)
@@ -139,11 +141,32 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
 Uploader = CloudinaryResourceHandler()
 
 
+class AmenityListView(generics.ListAPIView):
+    """Public catalogue of amenities, used by the listing form and
+    the search filters."""
+
+    serializer_class = AmenitySerializer
+    pagination_class = None
+    queryset = Amenity.objects.filter(
+        is_active=True, is_deleted=False).order_by('group', 'name')
+
+
+class NearbyFeatureListView(generics.ListAPIView):
+    """Public catalogue of nearby features, used by the listing form and
+    the search filters."""
+
+    serializer_class = NearbyFeatureSerializer
+    pagination_class = None
+    queryset = NearbyFeature.objects.filter(
+        is_active=True, is_deleted=False).order_by('name')
+
+
 class CreateAndListPropertyView(generics.ListCreateAPIView):
-    """Handle requests for creation of property"""
+    """Handle requests for creation of property.
+    Any registered user can create a listing."""
 
     serializer_class = PropertySerializer
-    permission_classes = (IsClientAdmin | ReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (PropertyJSONRenderer,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
     filter_class = PropertyFilter
@@ -163,14 +186,13 @@ class CreateAndListPropertyView(generics.ListCreateAPIView):
             # admins view all property, no filtering
             return Property.objects.all()
 
-        if user.is_authenticated and user.employer.first():
-            # if the user is a client_admin, they see all published property
-            # and also their client's published and unpublished property.
-            client = user.employer.first()
-            return Property.active_objects.all_published_and_all_by_client(
-                client=client)
+        if user.is_authenticated:
+            # users see all published property and all
+            # of their own listings, published or not.
+            return Property.active_objects.all_published_and_all_by_owner(
+                owner=user)
 
-        # other users only see published property
+        # anonymous visitors only see published property
         return Property.active_objects.all_published()
 
     def create(self, request, *args, **kwargs):
@@ -183,7 +205,6 @@ class CreateAndListPropertyView(generics.ListCreateAPIView):
         # modify the data to pass to the DB
         request.POST._mutable = True
         payload = request.data
-        payload['client'] = request.user.employer.first().pk
         # upload the main image
         main_image_url = Uploader.upload_image_from_request(request)
         payload['image_main'] = main_image_url
@@ -194,9 +215,11 @@ class CreateAndListPropertyView(generics.ListCreateAPIView):
         # upload videos
         video = Uploader.upload_video_from_request(request)
         payload['video'] = video
+
+
         serializer = self.serializer_class(data=payload)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(owner=request.user)
         response = {
             'data': {"property": serializer.data}
         }
@@ -221,15 +244,10 @@ class PropertyEnquiryDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user.role == 'LA':
             return PropertyEnquiry.objects.all()
 
-        # check if the user is a client admin
-        # and return all enquiries made on his/her property
-        if user.role == 'CA':
-            return PropertyEnquiry.active_objects.for_client(
-                client=user.employer.first())
-
-        # else if the user is a buyer return only
-        # the records that are associated with him/her
-        return PropertyEnquiry.active_objects.for_user(user=user)
+        # a user sees enquiries they made and enquiries
+        # made on their own listings
+        return (PropertyEnquiry.active_objects.for_user(user=user) |
+                PropertyEnquiry.active_objects.for_owner(owner=user))
 
     def destroy(self, request, enquiry_id):
         """
@@ -279,10 +297,9 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user.is_authenticated and user.role == 'LA':
             return Property.objects.all()
 
-        if user.is_authenticated and user.employer.first():
-            client = user.employer.first()
-            return Property.active_objects.all_published_and_all_by_client(
-                client=client)
+        if user.is_authenticated:
+            return Property.active_objects.all_published_and_all_by_owner(
+                owner=user)
 
         return Property.active_objects.all_published()
 
@@ -308,7 +325,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         """
         found_property = self.get_object()
 
-        # only landville staff can view deleted property.
+        # only staff can view deleted property.
         # They should be notified if they try deleting
         # property that is already soft deleted.
         if found_property.is_deleted:
@@ -321,11 +338,10 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         }, status=status.HTTP_200_OK)
 
     def patch(self, request, slug, **kwargs):
-        """The `client` field is writable. We should not allow users to
-        change this field when making updates."""
+        """The `owner` field should never be changed by an update."""
         request.POST._mutable = True
         payload = request.data
-        payload.pop('client', None)
+        payload.pop('owner', None)
         obj = self.get_object()
         # update main image
         updated_main_image = Uploader.upload_image_from_request(request)
@@ -340,6 +356,8 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         video = Uploader.upload_video_from_request(request)
         if video:
             payload['video'] = video
+
+
         serializer = self.serializer_class(obj, data=payload, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.update(obj, payload)
@@ -349,6 +367,38 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         }
         return Response(response)
+
+
+class PropertyStatusUpdateView(generics.UpdateAPIView):
+    """Allow a listing owner to mark it Available, Rented or Sold."""
+
+    serializer_class = PropertyStatusSerializer
+    permission_classes = (CanEditProperty,)
+    renderer_classes = (PropertyJSONRenderer,)
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated and user.role == 'LA':
+            return Property.objects.all()
+        if user.is_authenticated:
+            return Property.active_objects.for_owner(owner=user)
+        return Property.active_objects.none()
+
+    def patch(self, request, slug):
+        obj = self.get_object()
+        self.check_object_permissions(request, obj)
+        serializer = self.serializer_class(
+            obj, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        new_status = serializer.validated_data.get('status', obj.status)
+        obj.status = new_status
+        obj.closed_at = now() if new_status in ('RE', 'SO') else None
+        obj.save()
+        return Response({
+            "data": {"property": PropertySerializer(obj).data},
+            "message": "Successfully updated the listing status"
+        })
 
 
 class DeleteCloudinaryResourceView(generics.DestroyAPIView):
@@ -368,10 +418,9 @@ class DeleteCloudinaryResourceView(generics.DestroyAPIView):
         if user.is_authenticated and user.role == 'LA':
             return Property.objects.all()
 
-        if user.is_authenticated and user.employer.first():
-            client = user.employer.first()
-            return Property.active_objects.all_published_and_all_by_client(
-                client=client)
+        if user.is_authenticated:
+            return Property.active_objects.all_published_and_all_by_owner(
+                owner=user)
 
         return Property.active_objects.all_published()
 
@@ -394,9 +443,9 @@ class DeleteCloudinaryResourceView(generics.DestroyAPIView):
 class BuyerPropertyListView(generics.ListCreateAPIView):
     """
     Class defining views for retrieving and deleting
-    properties inside a buyer's list of properties.
+    properties inside a user's saved-properties list.
     """
-    permission_classes = (IsBuyer,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = BuyerPropertyListSerializer
     renderer_classes = (PropertyJSONRenderer,)
     lookup_field = 'slug'
@@ -439,7 +488,7 @@ class BuyerPropertyListView(generics.ListCreateAPIView):
 
     def create(self, request, slug):
         """
-        Add property to the current buyer's list
+        Add property to the current user's saved list
         we first check if the property exists in
         the current user's list
         """
@@ -452,7 +501,7 @@ class BuyerPropertyListView(generics.ListCreateAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
         if result['property'].exists():
             return Response({
-                'errors': result['title'] + ' is already in your buy list'
+                'errors': result['title'] + ' is already in your saved list'
             }, status=status.HTTP_400_BAD_REQUEST)
         data = {
             'buyer': request.user.id,
@@ -463,7 +512,7 @@ class BuyerPropertyListView(generics.ListCreateAPIView):
         serializer.save()
 
         message = result['title'] + \
-            ' has been successfully added to your buy list'
+            ' has been successfully added to your saved list'
         return Response({
             'data': message
         })
@@ -482,12 +531,12 @@ class BuyerPropertyListView(generics.ListCreateAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
         if not result['property'].exists():
             return Response({
-                'errors': result['title'] + ' is not in your buy list'
+                'errors': result['title'] + ' is not in your saved list'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         result['property'].delete()
         message = result['title'] + \
-            ' has been successfully removed from your buy list'
+            ' has been successfully removed from your saved list'
         return Response({
             'data': message
         })
@@ -506,7 +555,7 @@ class TrendingPropertyView(generics.ListAPIView):
         """
         this method get_queryset to allow users
         get Published properties in a
-        specific location and which are not sold, a user
+        specific location and which are still available, a user
         is given a chance to select a date, if a date
         is not selected,the query will return trending
         properties in the last 30 days
@@ -522,11 +571,11 @@ class TrendingPropertyView(generics.ListAPIView):
         query_results = Property.active_objects.filter(
             last_viewed__date__gte=date,
             is_published=True,
-            is_sold=False,
+            status='AV',
             view_count__gte=1).order_by('-view_count', 'last_viewed')
         if city:
-            query_results = query_results.filter(address__City__icontains=city,
-                                                 )
+            query_results = query_results.filter(
+                address__City__icontains=city)
         return query_results[:10]
 
     def list(self, request):

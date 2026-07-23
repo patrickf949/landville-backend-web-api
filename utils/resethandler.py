@@ -38,7 +38,6 @@ class ResetHandler:
             'email': payload['email'],
             'exp': int(token_expiry.strftime('%s'))},
             settings.SECRET_KEY, algorithm='HS256')
-        token = token.decode('utf-8')
         
         """
         here we store the encoded token in our database 
@@ -57,7 +56,7 @@ class ResetHandler:
 
         try:
             decoded_token = jwt.decode(
-                token, settings.SECRET_KEY, algorithm='HS256')
+                token, settings.SECRET_KEY, algorithms=['HS256'])
 
         except jwt.exceptions.ExpiredSignatureError:
             msg = 'Your token has expired. Make a new token and try again'
