@@ -66,6 +66,7 @@ urlpatterns = [
          include(('property.urls', 'property'), namespace='property')),
     path('api/v1/terms/', include(('pages.urls', 'terms'), namespace='terms')),
     path('api/v1/chat/', include(('chat.urls', 'chat'), namespace='chat')),
+    path('api/v1/transactions/', include(('transactions.urls', 'transactions'), namespace='transactions')),
 ]
 
 handler404 = 'landville.views.error_404'

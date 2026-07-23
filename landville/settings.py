@@ -29,6 +29,8 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('1', 'true', 'yes', 'on')
 ALLOWED_HOSTS = [
     host for host in os.environ.get('ALLOWED_HOSTS', '').split(',') if host
 ]
+if 'localhost' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.extend(['localhost', '127.0.0.1', '0.0.0.0'])
 SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '0'))
 SECURE_HSTS_INCLUDE_SUBDOMAINS = os.environ.get(
     'SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False'
@@ -56,6 +58,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -80,6 +83,7 @@ INSTALLED_APPS = [
     'property.apps.PropertyConfig',
     'pages.apps.PagesConfig',
     'chat.apps.ChatConfig',
+    'transactions.apps.TransactionsConfig',
 ]
 
 MIDDLEWARE = [

@@ -3,6 +3,20 @@ import os
 import sys
 
 if __name__ == '__main__':
+    # Load .env file manually if it exists
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, val = line.split('=', 1)
+                    key = key.strip()
+                    if key.startswith('export '):
+                        key = key[7:]
+                    val = val.strip().strip("'").strip('"')
+                    os.environ.setdefault(key.strip(), val)
+
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'landville.settings')
     try:
         from django.core.management import execute_from_command_line

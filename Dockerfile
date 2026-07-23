@@ -21,8 +21,9 @@ COPY . .
 # the real SECRET_KEY is injected at runtime by the host.
 RUN SECRET_KEY=build-time-only python manage.py collectstatic --noinput
 
-EXPOSE 8000
+EXPOSE ${PORT}
 
 # Migrate on boot, then serve ASGI (websockets + HTTP) via daphne.
 CMD python manage.py migrate --noinput && \
-    daphne -b 0.0.0.0 -p ${PORT:-8000} landville.asgi:application
+    celery -A landville worker -l info & \
+    daphne -b 0.0.0.0 -p ${PORT} landville.asgi:application
