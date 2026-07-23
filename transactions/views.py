@@ -183,11 +183,11 @@ class RetreiveTransactionsAPIView(generics.GenericAPIView):
         if queryset:
             serializer = self.serializer_class(
                 queryset, many=True, context={'request': request})
+            transactions_data = serializer.data
         else:
-            return Response({"errors": "No transactions available"},
-                            status=status.HTTP_404_NOT_FOUND)
+            transactions_data = []
 
-        data = {"data": {"transactions": serializer.data},
+        data = {"data": {"transactions": transactions_data},
                 "message": "Transaction(s) retrieved successfully"}
         return Response(data, status=status.HTTP_200_OK)
 
@@ -230,29 +230,35 @@ def card_foreign_payment(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         auth_dict = {
-            'suggested_auth': 'NOAUTH_INTERNATIONAL',
-            'billingzip': serializer.validated_data.get('billingzip'),
-            'billingcity': serializer.validated_data.get('billingcity'),
-            'billingaddress': serializer.validated_data.get('billingaddress'),
-            'billingstate': serializer.validated_data.get('billingstate'),
-            'billingcountry': serializer.validated_data.get('billingcountry'),
+            'mode': 'redirect',
+            'city': serializer.validated_data.get('billingcity'),
+            'address': serializer.validated_data.get('billingaddress'),
+            'state': serializer.validated_data.get('billingstate'),
+            'country': serializer.validated_data.get('billingcountry'),
+            'zipcode': serializer.validated_data.get('billingzip'),
         }
         pay_data['auth_dict'] = auth_dict
         pay_data['purpose'] = purpose
         pay_data['property_id'] = property_id
         auth_resp = TransactionServices.authenticate_card_payment(pay_data)
-        if auth_resp.get('status') == 'success':
+        if auth_resp.get('status') == 'error' or ('data' not in auth_resp and 'meta' not in auth_resp):
             return Response(
-                {
-                    'message': auth_resp['data']['authurl'],
-                    'txRef': auth_resp.get('data').get('txRef')
-                },
-                status=status.HTTP_200_OK)
-        else:
-            return Response(
-                {'message': auth_resp.get('message')},
+                {'message': auth_resp.get('message', 'Payment authentication failed.'), 'raw': auth_resp},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # In v3, authurl is typically in meta.authorization.redirect, and txRef might be in data.tx_ref
+        meta = auth_resp.get('meta', {})
+        authorization = meta.get('authorization', {})
+        authurl = authorization.get('redirect') or auth_resp.get('data', {}).get('authurl')
+        txRef = auth_resp.get('data', {}).get('tx_ref') or auth_resp.get('data', {}).get('txRef')
+
+        return Response(
+            {
+                'message': authurl,
+                'txRef': txRef
+            },
+            status=status.HTTP_200_OK)
 
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -293,22 +299,24 @@ def card_pin_payment(request):
             )
 
         auth_dict = {
-            'suggested_auth': 'PIN',
+            'mode': 'pin',
             'pin': serializer.validated_data.get('pin')
         }
         pay_data['auth_dict'] = auth_dict
 
         auth_resp = TransactionServices.authenticate_card_payment(pay_data)
 
-        if auth_resp.get('status') == 'error':
+        if auth_resp.get('status') == 'error' or 'data' not in auth_resp:
             return Response(
-                {'message': auth_resp.get('message')},
+                {'message': auth_resp.get('message', 'Payment authentication failed.'), 'raw': auth_resp},
                 status=status.HTTP_400_BAD_REQUEST
             )
+            
+        flw_ref = auth_resp['data'].get('flwRef') or auth_resp['data'].get('flw_ref')
         return Response(
             {
                 'message': 'Kindly input the OTP sent to you',
-                'flwRef': auth_resp['data']['flwRef']
+                'flwRef': flw_ref
             }, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -345,18 +353,43 @@ def validate_payment(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     else:
-        txRef = resp['data']['tx']['txRef']
+        # v3 response does not have 'tx' wrapper, and uses tx_ref or txRef
+        tx_data = resp.get('data', {})
+        txRef = tx_data.get('tx_ref') or tx_data.get('txRef')
+        
         verify_resp = TransactionServices.verify_payment(txRef)
-        email = verify_resp['data']['custemail']
-        user = User.objects.get(email=email)
-        if verify_resp.get('data').get('status') == 'successful':
-            save_card = verify_resp['data']['meta'][0]['metavalue']
-            message = verify_resp['data']['vbvmessage']
-            if int(save_card) == 1:
+        verify_data = verify_resp.get('data', {})
+        
+        # in v3 email is usually inside customer dict, in v2 it was custemail
+        email = verify_data.get('custemail')
+        if not email and 'customer' in verify_data:
+            email = verify_data['customer'].get('email')
+            
+        if request.user and request.user.is_authenticated:
+            user = request.user
+        else:
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response({'message': 'User associated with this transaction could not be found.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+        if verify_data.get('status') == 'successful':
+            meta = verify_data.get('meta', {})
+            save_card_val = 0
+            if isinstance(meta, dict):
+                save_card_val = meta.get('save_card', 0)
+            elif isinstance(meta, list):
+                for m in meta:
+                    if m.get('metaname') == 'save_card':
+                        save_card_val = m.get('metavalue', 0)
+                        break
+                        
+            message = verify_data.get('vbvmessage') or verify_data.get('processor_response', 'Payment successful')
+            if str(save_card_val) in ['1', 'true', 'True']:
                 message += TransactionServices.save_card(verify_resp)
-            data = resp.get('data').get('tx')
-            references = {k: v for k, v in data.items() if k.endswith('Ref')}
-            amount = data.get('amount', 0)
+                
+            references = {k: v for k, v in tx_data.items() if k.lower().endswith('ref')}
+            amount = tx_data.get('amount', 0)
             save_deposit(purpose,
                          references,
                          amount,
@@ -378,25 +411,51 @@ def foreign_card_validation_response(request):
     """
     domain = os.environ.get('FRONT_END_INTPAYMENT_URL')
 
-    resp = json.loads(request.query_params['response'])
-    verify_resp = TransactionServices.verify_payment(resp['txRef'])
-    email = verify_resp['data']['custemail']
-    user = User.objects.get(email=email)
-    if verify_resp.get('status') == 'success':
-        message = verify_resp['data']['vbvmessage']
-        meta_data = verify_resp.get('data').get('meta')
-        save_card = meta_data[0]['metavalue']
-        purpose = meta_data[1]['metavalue']
+    resp = json.loads(request.query_params.get('response', '{}'))
+    txRef = resp.get('txRef') or resp.get('tx_ref')
+    verify_resp = TransactionServices.verify_payment(txRef)
+    
+    verify_data = verify_resp.get('data', {})
+    email = verify_data.get('custemail')
+    if not email and 'customer' in verify_data:
+        email = verify_data['customer'].get('email')
+        
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return HttpResponseRedirect(f"{domain}?message=User associated with this transaction could not be found.&status=failure")
+
+    if verify_resp.get('status') == 'success' or verify_data.get('status') == 'successful':
+        message = verify_data.get('vbvmessage') or verify_data.get('processor_response', 'Payment successful')
+        meta_data = verify_data.get('meta', {})
+        
+        save_card_val = 0
+        purpose = None
         property_id = None
+        
+        if isinstance(meta_data, dict):
+            save_card_val = meta_data.get('save_card', 0)
+            purpose = meta_data.get('purpose')
+            property_id = meta_data.get('property_id')
+        elif isinstance(meta_data, list):
+            for m in meta_data:
+                metaname = m.get('metaname')
+                if metaname == 'save_card':
+                    save_card_val = m.get('metavalue', 0)
+                elif metaname == 'purpose':
+                    purpose = m.get('metavalue')
+                elif metaname == 'property_id':
+                    property_id = m.get('metavalue')
+
         property = None
-        if purpose == 'Buying':
-            property_id = meta_data[2]['metavalue']
+        if purpose == 'Buying' and property_id:
             property = get_object_or_404(Property, pk=property_id)
-        if int(save_card):
+            
+        if str(save_card_val) in ['1', 'true', 'True']:
             message += TransactionServices.save_card(verify_resp)
-        data = verify_resp.get('data')
-        references = {k: v for k, v in data.items() if k.endswith('ref')}
-        amount = data.get('amount', 0)
+            
+        references = {k: v for k, v in verify_data.items() if k.lower().endswith('ref')}
+        amount = verify_data.get('amount', 0)
         save_deposit(purpose, references, amount, user, property)
 
     else:
