@@ -24,28 +24,32 @@ class PasswordResetTokenTestBase(APITestCase):
         self.expired_token_time = datetime.now() - timedelta(hours=1)
         self.token_expiry = datetime.now() + timedelta(hours=24)
 
-        self.reset_token = jwt.encode({
+        def safe_jwt_encode(payload):
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            return token.decode('utf-8') if isinstance(token, bytes) else token
+
+        self.reset_token = safe_jwt_encode({
             'email': self.normal_user.email,
             'exp': int(self.token_expiry.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        })
         self.token_object = PasswordResetTokenFactory.create(
             token=self.reset_token)
 
-        self.expired_token = jwt.encode({
+        self.expired_token = safe_jwt_encode({
             'email': self.normal_user.email,
             'exp': int(self.expired_token_time.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        })
         self.token_object2 = PasswordResetTokenFactory.create(
             token=self.expired_token)
 
-        self.non_existent_user_token = jwt.encode({
+        self.non_existent_user_token = safe_jwt_encode({
             'email': self.faker.email(),
             'exp': int(self.token_expiry.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        })
         self.fake_token_object = PasswordResetTokenFactory.create(
             token=self.non_existent_user_token)
 
-        self.fake_token = self.faker.text()
+        self.fake_token = 'invalid_format_token'
         self.fake_token_object2 = PasswordResetTokenFactory.create(
             token=self.fake_token)
 

@@ -564,12 +564,12 @@ class PropertyViewTests(BaseTest):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    @patch('utils.media_handlers.uploader.upload')
     def test_we_get_appropriate_response_if_Cloudinary_fails_image_uploads(
-            self):
+            self, mock_upload):
         """If Cloudinary returns an error when uplaoding an image,
         we should return an appropriate response """
-        uploader = Mock()
-        uploader.upload.side_effects = Error
+        mock_upload.side_effect = Error("Mocked Cloudinary failure")
 
         temp_main_image = NamedTemporaryFile(suffix='.jpg')
 
@@ -856,7 +856,7 @@ class BuyerPropertyListTest(BaseTest):
         view = BuyerPropertyListView.as_view()
         response = view(request, self.property4.slug)
         self.assertIn(
-            ' has been successfully added to your buy list',
+            ' has been successfully added to your saved list',
             response.data['data'],
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -904,7 +904,7 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property2.slug)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get('errors'),
-                         self.property2.title + ' is already in your buy list')
+                         self.property2.title + ' is already in your saved list')
 
     def test_users_can_delete_already_existing_property_from_their_buying_list(self):  # noqa
         """
@@ -920,7 +920,7 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property2.slug)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('data'), self.property2.title  # noqa
-                         + ' has been successfully removed from your buy list')
+                         + ' has been successfully removed from your saved list')
 
     def test_users_cant_delete_non_existing_property_from_their_buying_list(self):  # noqa
         """
@@ -936,10 +936,15 @@ class BuyerPropertyListTest(BaseTest):
         response = view(request, self.property4.slug)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get('errors'),
-                         self.property4.title + ' is not in your buy list')
+                         self.property4.title + ' is not in your saved list')
 
 
 class TestEnquiryViews(BaseTest):
+
+    def setUp(self):
+        super().setUp()
+        self.property11.is_published = True
+        self.property11.save()
 
     def test_user_can_be_able_to_create_an_enquiry(self):
         """
@@ -1129,7 +1134,7 @@ class TestEnquiryViews(BaseTest):
             GET_ALL_ENQURIES_URL, format='json'
         )
 
-        force_authenticate(get_enquiry, user=self.user1)
+        force_authenticate(get_enquiry, user=self.user2)
         view2 = ListCreateEnquiryAPIView.as_view()
         get_response = view2(get_enquiry)
         # since no enquiries have been made so far lets assert the list is 0

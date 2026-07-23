@@ -27,8 +27,11 @@ class UserManagerTest(TransactionTestCase):
 
     def test_email_representation(self):
         self.assertIn('user', self.user1.get_email)
-        self.assertIn(
-            'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9', self.user1.token)
+        import jwt
+        from django.conf import settings
+        decoded = jwt.decode(self.user1.token, settings.SECRET_KEY, algorithms=['HS256'])
+        self.assertEqual(decoded['email'], 'user@email.com')
+        self.assertEqual(decoded['id'], self.user1.id)
 
     def test_that_user_token_is_created(self):
         self.assertIsNotNone(self.user2.token)

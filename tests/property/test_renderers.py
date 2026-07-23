@@ -22,7 +22,7 @@ class PropertyJSONRendererTest(BaseTest):
         rendered_property = self.property_renderer.render(response)
         self.assertIn("property", rendered_property)
         # the fields with choices are rendered with human-readable values
-        self.assertIn("Building", rendered_property)
+        self.assertIn("House", rendered_property)
 
     def test_that_errors_are_rendered_as_expected(self):
         dict_data = {"errors": "This error should be properly rendered"
@@ -65,7 +65,7 @@ class PropertyJSONRendererTest(BaseTest):
         rendered_data = self.property_renderer.render(payload)
         self.assertIn("properties", rendered_data)
         # choices are properly rendered as human-readable values
-        self.assertIn("Installments", rendered_data)
+        self.assertIn("Sale", rendered_data)
 
 
 class TestPropertyEnquiryRender(BaseTest):

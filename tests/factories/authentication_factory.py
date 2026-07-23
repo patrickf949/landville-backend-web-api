@@ -1,4 +1,5 @@
 import factory
+from factory.django import DjangoModelFactory
 from faker import Faker
 
 from authentication.models import User, UserProfile, Client, \
@@ -10,7 +11,7 @@ address = {'City': 'Nairobi', 'Street': 'Valley Road', 'State': 'Nairobi'}
 role = "CA"
 
 
-class UserFactory(factory.DjangoModelFactory):
+class UserFactory(DjangoModelFactory):
     """This class will create test users"""
 
     class Meta:
@@ -26,7 +27,7 @@ class UserFactory(factory.DjangoModelFactory):
     role = role
 
 
-class ClientFactory(factory.DjangoModelFactory):
+class ClientFactory(DjangoModelFactory):
     """This class will create clients"""
 
     class Meta:
@@ -40,7 +41,7 @@ class ClientFactory(factory.DjangoModelFactory):
     email = factory.sequence(lambda n: f'user_{n}@email.com')
 
 
-class UserProfileFactory(factory.DjangoModelFactory):
+class UserProfileFactory(DjangoModelFactory):
     """This class will create user profiles"""
 
     class Meta:
@@ -54,7 +55,7 @@ class UserProfileFactory(factory.DjangoModelFactory):
     security_answer = fake.word()
 
 
-class PasswordResetTokenFactory(factory.DjangoModelFactory):
+class PasswordResetTokenFactory(DjangoModelFactory):
     """ This class creates PasswordResetToken objects for testing."""
 
     class Meta:
@@ -64,7 +65,7 @@ class PasswordResetTokenFactory(factory.DjangoModelFactory):
     is_valid = True
 
 
-class ClientReviewsFactory(factory.DjangoModelFactory):
+class ClientReviewsFactory(DjangoModelFactory):
     """This class will create reviews on clients for testing """
 
     class Meta:
@@ -75,7 +76,7 @@ class ClientReviewsFactory(factory.DjangoModelFactory):
     review = fake.sentences()
 
 
-class ReplyReviewsFactory(factory.DjangoModelFactory):
+class ReplyReviewsFactory(DjangoModelFactory):
     """This class will create replies to reviews"""
 
     class Meta:

@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 class TestErrorHandler(APITestCase):
@@ -23,8 +23,8 @@ class TestErrorHandler(APITestCase):
                    "Please check the documentation here : "
                    "/api/v1/documentation/ "
                    "and try again later.")
-        self.assertEquals(response.json().get('message'), message)
-        self.assertJSONEqual(force_text(response.content),
+        self.assertEqual(response.json().get('message'), message)
+        self.assertJSONEqual(force_str(response.content),
                              {'message': message})
         self.assertEqual(
             response.status_code,

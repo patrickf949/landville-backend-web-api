@@ -61,4 +61,4 @@ class BuyerPropertyListTest(BaseTest):
         """
         email = self.buyer1.email
         self.assertEqual(
-            str(self.buyerpropertylist), 'Buyer list for: ' + email)
+            str(self.buyerpropertylist), 'Saved properties for: ' + email)

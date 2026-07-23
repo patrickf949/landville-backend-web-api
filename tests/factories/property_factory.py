@@ -1,4 +1,5 @@
 import factory
+from factory.django import DjangoModelFactory
 from faker import Faker
 import pytz
 
@@ -16,7 +17,7 @@ address = {'City': fake.city(), 'Street': fake.street_name(),
 coordinates = {'lat': '25354.231', 'lon': '45235.0343'}
 
 
-class PropertyFactory(factory.DjangoModelFactory):
+class PropertyFactory(DjangoModelFactory):
     """This class creates fake property"""
 
     class Meta:
@@ -38,7 +39,7 @@ class PropertyFactory(factory.DjangoModelFactory):
     status = 'AV'
 
 
-class PropertyEnquiryFactory(factory.DjangoModelFactory):
+class PropertyEnquiryFactory(DjangoModelFactory):
     """This class creates fake property enquiry"""
 
     class Meta:
@@ -51,7 +52,7 @@ class PropertyEnquiryFactory(factory.DjangoModelFactory):
     message = fake.sentences()
 
 
-class PropertyReviewFactory(factory.DjangoModelFactory):
+class PropertyReviewFactory(DjangoModelFactory):
     """This class creates fake property reviews"""
 
     class Meta:
@@ -62,7 +63,7 @@ class PropertyReviewFactory(factory.DjangoModelFactory):
     comment = fake.sentences()
 
 
-class PropertyInspectionFactory(factory.DjangoModelFactory):
+class PropertyInspectionFactory(DjangoModelFactory):
     """This calss creates fake property inspections"""
 
     class Meta:
@@ -74,7 +75,7 @@ class PropertyInspectionFactory(factory.DjangoModelFactory):
     remarks = fake.sentences()
 
 
-class BuyerPropertyListFactory(factory.DjangoModelFactory):
+class BuyerPropertyListFactory(DjangoModelFactory):
     """This calss creates fake property inspections"""
 
     class Meta:

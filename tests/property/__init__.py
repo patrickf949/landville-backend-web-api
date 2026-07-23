@@ -1,4 +1,11 @@
 import json
+from unittest.mock import MagicMock
+import cloudinary.uploader as uploader
+
+# Global Cloudinary mock for test suite
+uploader.upload = MagicMock(return_value={"url": "http://res.cloudinary.com/test/image/upload/v12345/test.jpg"})
+uploader.upload_large = MagicMock(return_value={"url": "http://res.cloudinary.com/test/video/upload/v12345/test.mp4"})
+uploader.destroy = MagicMock(return_value={"result": "ok"})
 
 from django.urls import reverse
 from django.conf import settings

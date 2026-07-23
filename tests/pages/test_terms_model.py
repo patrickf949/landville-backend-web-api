@@ -8,4 +8,4 @@ class TestModel(TermsTestBase):
 
     def test_model_string_representation(self):
         """Test if the model picks the specified title."""
-        self.assertEquals(str(self.terms), "Terms and Conditions")
+        self.assertEqual(str(self.terms), "Terms and Conditions")

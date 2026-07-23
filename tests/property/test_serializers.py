@@ -22,7 +22,7 @@ class PropertySerializerTest(BaseTest):
         }
         serializer = PropertySerializer(data=data)
         self.assertTrue(serializer.is_valid())
-        new_property = serializer.save()
+        new_property = serializer.save(owner=self.user1)
         self.assertIsInstance(new_property, Property)
 
     def test_serialiser_throws_an_error_if_address_is_not_dictionary(self):

@@ -1,6 +1,7 @@
 """Websocket consumer tests. These use the in-memory channel layer."""
-import pytest
+from django.test import TransactionTestCase
 from channels.testing import WebsocketCommunicator
+from asgiref.sync import async_to_sync
 
 from landville.asgi import application
 from chat.models import Conversation
@@ -8,38 +9,45 @@ from tests.factories.authentication_factory import UserFactory
 from tests.factories.property_factory import PropertyFactory
 
 
-@pytest.mark.django_db(transaction=True)
-@pytest.mark.asyncio
-class TestChatConsumer:
+class TestChatConsumer(TransactionTestCase):
 
-    async def _connect(self, conversation, user):
-        communicator = WebsocketCommunicator(
-            application,
-            f'/ws/chat/{conversation.pk}/?token={user.token}')
-        connected, _ = await communicator.connect()
-        return communicator, connected
-
-    async def test_participant_can_connect_and_exchange_messages(self):
+    def test_participant_can_connect_and_exchange_messages(self):
         owner = UserFactory.create()
         seeker = UserFactory.create()
         listing = PropertyFactory.create(owner=owner, is_published=True)
         conversation = Conversation.objects.create(
             listing=listing, initiator=seeker)
 
-        comm_owner, ok_owner = await self._connect(conversation, owner)
-        comm_seeker, ok_seeker = await self._connect(conversation, seeker)
-        assert ok_owner and ok_seeker
+        conv_pk = conversation.pk
+        owner_token = owner.token
+        seeker_token = seeker.token
 
-        await comm_seeker.send_json_to(
-            {'type': 'message.send', 'body': 'Hello!'})
-        event = await comm_owner.receive_json_from()
-        assert event['type'] == 'message.new'
-        assert event['message']['body'] == 'Hello!'
+        async def run_test():
+            comm_owner = WebsocketCommunicator(
+                application,
+                f'/ws/chat/{conv_pk}/?token={owner_token}')
+            connected_owner, _ = await comm_owner.connect()
 
-        await comm_owner.disconnect()
-        await comm_seeker.disconnect()
+            comm_seeker = WebsocketCommunicator(
+                application,
+                f'/ws/chat/{conv_pk}/?token={seeker_token}')
+            connected_seeker, _ = await comm_seeker.connect()
 
-    async def test_non_participant_is_rejected(self):
+            self.assertTrue(connected_owner)
+            self.assertTrue(connected_seeker)
+
+            await comm_seeker.send_json_to(
+                {'type': 'message.send', 'body': 'Hello!'})
+            event = await comm_owner.receive_json_from()
+            self.assertEqual(event['type'], 'message.new')
+            self.assertEqual(event['message']['body'], 'Hello!')
+
+            await comm_owner.disconnect()
+            await comm_seeker.disconnect()
+
+        async_to_sync(run_test)()
+
+    def test_non_participant_is_rejected(self):
         owner = UserFactory.create()
         seeker = UserFactory.create()
         stranger = UserFactory.create()
@@ -47,17 +55,33 @@ class TestChatConsumer:
         conversation = Conversation.objects.create(
             listing=listing, initiator=seeker)
 
-        communicator, connected = await self._connect(conversation, stranger)
-        assert not connected
+        conv_pk = conversation.pk
+        stranger_token = stranger.token
 
-    async def test_anonymous_connection_is_rejected(self):
+        async def run_test():
+            comm_stranger = WebsocketCommunicator(
+                application,
+                f'/ws/chat/{conv_pk}/?token={stranger_token}')
+            connected_stranger, _ = await comm_stranger.connect()
+            self.assertFalse(connected_stranger)
+            await comm_stranger.disconnect()
+
+        async_to_sync(run_test)()
+
+    def test_anonymous_connection_is_rejected(self):
         owner = UserFactory.create()
         seeker = UserFactory.create()
         listing = PropertyFactory.create(owner=owner, is_published=True)
         conversation = Conversation.objects.create(
             listing=listing, initiator=seeker)
 
-        communicator = WebsocketCommunicator(
-            application, f'/ws/chat/{conversation.pk}/')
-        connected, _ = await communicator.connect()
-        assert not connected
+        conv_pk = conversation.pk
+
+        async def run_test():
+            communicator = WebsocketCommunicator(
+                application, f'/ws/chat/{conv_pk}/')
+            connected, _ = await communicator.connect()
+            self.assertFalse(connected)
+            await communicator.disconnect()
+
+        async_to_sync(run_test)()
