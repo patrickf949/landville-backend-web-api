@@ -11,11 +11,12 @@ from chat.serializers import ConversationSerializer, MessageSerializer
 from property.models import Property
 
 
+from django.db.models import Q
+
 def _conversations_for(user):
     return Conversation.objects.filter(
         is_deleted=False).filter(
-        listing__owner=user).union(
-        Conversation.objects.filter(is_deleted=False, initiator=user))
+        Q(listing__owner=user) | Q(initiator=user))
 
 
 class ConversationListView(generics.ListAPIView):

@@ -105,7 +105,7 @@ class EmailVerificationView(generics.GenericAPIView):
     """Verify the users email."""
 
     def get(self, request):
-        domain = os.environ.get('FRONT_END_LOGIN_URL')
+        domain = os.environ.get('FRONT_END_LOGIN_URL') or os.environ.get('FRONT_END_URL') or 'http://localhost:4200'
         token, user_id = request.GET.get("token").split("~")
         try:
             payload = jwt.decode(
