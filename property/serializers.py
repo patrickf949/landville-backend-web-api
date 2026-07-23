@@ -161,11 +161,11 @@ class PropertySerializer(serializers.ModelSerializer):
 
         # we need to ensure that coordinates and addresses are decoded
         # before they can be saved
-        coordinates = validated_data.pop('coordinates', None)
+        coordinates = validated_data.get('coordinates', None)
         if isinstance(coordinates, str):
             validated_data['coordinates'] = json.loads(coordinates)
 
-        address = validated_data.pop('address', None)
+        address = validated_data.get('address', None)
         if isinstance(address, str):
             validated_data['address'] = json.loads(address)
 

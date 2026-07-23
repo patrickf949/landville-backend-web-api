@@ -49,6 +49,17 @@ class PropertyJSONRenderer(JSONRenderer):
             if errors:
                 return super().render(data)
 
+            results = data.get('results')
+
+            # when getting multiple items, the actual payload is contained
+            # in the `results` key because they will be paginated
+            if isinstance(results, list):
+                for item in results:
+                    self.single_property_format(item)
+                return json.dumps({
+                    'data': {'properties': data}
+                })
+
             if type(data) == ReturnDict or type(data) == dict:
                 # if the response has a `data` key, we pass the actual
                 # payload to be rendered as the values in the `property`.
@@ -60,17 +71,6 @@ class PropertyJSONRenderer(JSONRenderer):
                     return json.dumps(data)
                 except TypeError:
                     return json.dumps(data)
-
-            results = data.get('results')
-
-            # when getting multiple items, the actual payload is contained
-            # in the `results` key because they will be paginated
-            if isinstance(results, list):
-                for item in results:
-                    self.single_property_format(item)
-                return json.dumps({
-                    'data': {'properties': data}
-                })
 
         return json.dumps({
             'data': {'property': data}

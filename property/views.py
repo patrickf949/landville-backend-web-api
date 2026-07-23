@@ -41,6 +41,7 @@ from utils.media_handlers import CloudinaryResourceHandler
 from utils.permissions import (
     CanEditProperty,
     IsOwner,
+    IsBuyer,
 )
 from utils.tasks import send_email_notification
 
@@ -51,7 +52,7 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
     we first pass the slug as the argument to fetch the property
     """
     serializer_class = PropertyEnquirySerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsBuyer)
     renderer_classes = (PropertyEnquiryJSONRenderer, )
 
     def get_queryset(self):
@@ -214,6 +215,8 @@ class CreateAndListPropertyView(generics.ListCreateAPIView):
         # upload videos
         video = Uploader.upload_video_from_request(request)
         payload['video'] = video
+
+
         serializer = self.serializer_class(data=payload)
         serializer.is_valid(raise_exception=True)
         serializer.save(owner=request.user)
@@ -353,6 +356,8 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
         video = Uploader.upload_video_from_request(request)
         if video:
             payload['video'] = video
+
+
         serializer = self.serializer_class(obj, data=payload, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.update(obj, payload)

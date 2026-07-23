@@ -7,7 +7,9 @@
       "comment": "Visited last weekend - the finishing is even better than the photos.",
       "is_published": true,
       "reviewer": 3,
-      "target_property": 1
+      "target_property": 1,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -18,7 +20,9 @@
       "comment": "Landlord was responsive and the compound is very secure.",
       "is_published": true,
       "reviewer": 2,
-      "target_property": 2
+      "target_property": 2,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -29,7 +33,9 @@
       "comment": "Beautiful home, the pool area is well maintained.",
       "is_published": true,
       "reviewer": 3,
-      "target_property": 7
+      "target_property": 7,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -40,7 +46,9 @@
       "comment": "Good value for the location, close to the BRT stop.",
       "is_published": true,
       "reviewer": 2,
-      "target_property": 5
+      "target_property": 5,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   }
 ]

@@ -7,7 +7,9 @@
       "group": "U",
       "icon": "fa-faucet",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -18,7 +20,9 @@
       "group": "U",
       "icon": "fa-water",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -29,7 +33,9 @@
       "group": "U",
       "icon": "fa-bolt",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -40,7 +46,9 @@
       "group": "U",
       "icon": "fa-plug",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -51,7 +59,9 @@
       "group": "U",
       "icon": "fa-solar-panel",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -62,7 +72,9 @@
       "group": "U",
       "icon": "fa-wifi",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -73,7 +85,9 @@
       "group": "S",
       "icon": "fa-door-closed",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -84,7 +98,9 @@
       "group": "S",
       "icon": "fa-border-all",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -95,7 +111,9 @@
       "group": "S",
       "icon": "fa-user-shield",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -106,7 +124,9 @@
       "group": "S",
       "icon": "fa-video",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -117,7 +137,9 @@
       "group": "S",
       "icon": "fa-shield-alt",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -128,7 +150,9 @@
       "group": "C",
       "icon": "fa-couch",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -139,7 +163,9 @@
       "group": "C",
       "icon": "fa-wind",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -150,7 +176,9 @@
       "group": "C",
       "icon": "fa-utensils",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -161,7 +189,9 @@
       "group": "C",
       "icon": "fa-box",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -172,7 +202,9 @@
       "group": "C",
       "icon": "fa-building",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -183,7 +215,9 @@
       "group": "C",
       "icon": "fa-leaf",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -194,7 +228,9 @@
       "group": "C",
       "icon": "fa-swimming-pool",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -205,7 +241,9 @@
       "group": "C",
       "icon": "fa-dumbbell",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -216,7 +254,9 @@
       "group": "A",
       "icon": "fa-parking",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -227,7 +267,9 @@
       "group": "A",
       "icon": "fa-warehouse",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -238,7 +280,9 @@
       "group": "A",
       "icon": "fa-sort",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -249,7 +293,9 @@
       "group": "A",
       "icon": "fa-wheelchair",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -260,7 +306,9 @@
       "group": "A",
       "icon": "fa-road",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -271,7 +319,9 @@
       "group": "L",
       "icon": "fa-drafting-compass",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -282,7 +332,9 @@
       "group": "L",
       "icon": "fa-file-contract",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -293,7 +345,9 @@
       "group": "L",
       "icon": "fa-check-circle",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -304,7 +358,9 @@
       "group": "L",
       "icon": "fa-tint",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -315,7 +371,9 @@
       "group": "L",
       "icon": "fa-vector-square",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -325,7 +383,9 @@
       "name": "Small town",
       "icon": "fa-city",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -335,7 +395,9 @@
       "name": "Trading centre",
       "icon": "fa-store",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -345,7 +407,9 @@
       "name": "Water source",
       "icon": "fa-tint",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -355,7 +419,9 @@
       "name": "School",
       "icon": "fa-school",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -365,7 +431,9 @@
       "name": "Hospital",
       "icon": "fa-hospital",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -375,7 +443,9 @@
       "name": "Market",
       "icon": "fa-shopping-basket",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -385,7 +455,9 @@
       "name": "Power line",
       "icon": "fa-bolt",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   },
   {
@@ -395,7 +467,9 @@
       "name": "Public transport",
       "icon": "fa-bus",
       "is_active": true,
-      "is_deleted": false
+      "is_deleted": false,
+      "created_at": "2026-07-20 12:00:00.000000+00",
+      "updated_at": "2026-07-20 12:00:00.000000+00"
     }
   }
 ]
