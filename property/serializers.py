@@ -58,7 +58,7 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         exclude = ('is_deleted',)
         read_only_fields = ('view_count', 'slug', 'is_deleted',
-                            'is_published', 'status', 'closed_at',
+                            'status', 'closed_at',
                             'list_date', 'owner')
 
     def get_owner(self, obj):
