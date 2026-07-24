@@ -2,14 +2,14 @@ import json
 from rest_framework import status
 from rest_framework.test import APITestCase
 from property.models import Property
-from tests.factories.user_factory import UserFactory
+from tests.factories.authentication_factory import UserFactory
+from django.urls import reverse
 
 class PropertyDraftTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client.force_authenticate(user=self.user)
-        self.url = '/api/properties/'
-
+        self.create_list_url = reverse('property:create_and_list_property')
     def test_create_draft_property(self):
         data = {
             'title': 'Test Draft Property',
@@ -22,7 +22,7 @@ class PropertyDraftTests(APITestCase):
             'coordinates': json.dumps({'lat': 9.0, 'lon': 7.0}),
             'is_published': 'false'
         }
-        res = self.client.post(self.url, data)
+        res = self.client.post(self.create_list_url, data)
         # Note: Depending on existing validations, image_main might be required.
         # If it is, this test might return 400. 
         # But this tests the basic payload handling.
@@ -43,8 +43,11 @@ class PropertyDraftTests(APITestCase):
             owner=self.user
         )
         
-        url = f'{self.url}{draft.slug}/'
-        res = self.client.patch(url, {'is_published': 'true'})
+        url = reverse('property:single_property', args=[draft.slug])
+        url = reverse('property:single_property', args=[draft.slug])
+        from django.test.client import encode_multipart
+        content = encode_multipart('BoUnDaRyStRiNg', {'is_published': True})
+        res = self.client.patch(url, content, content_type='multipart/form-data; boundary=BoUnDaRyStRiNg')
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         draft.refresh_from_db()
         self.assertTrue(draft.is_published)
