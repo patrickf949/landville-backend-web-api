@@ -124,7 +124,7 @@ class Property(BaseAbstractModel):
         max_length=1, choices=RENT_PERIODS, null=True, blank=True)
     description = models.TextField()
     list_date = models.DateField(null=True, blank=True)
-    is_published = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
     status = models.CharField(
         max_length=2, choices=STATUS_CHOICES, default='AV')
     closed_at = models.DateTimeField(null=True, blank=True)

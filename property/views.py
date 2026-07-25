@@ -169,7 +169,7 @@ class CreateAndListPropertyView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (PropertyJSONRenderer,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, )
-    filter_class = PropertyFilter
+    filterset_class = PropertyFilter
     search_fields = (
         'title',
         'description',

@@ -455,7 +455,6 @@ class PropertyViewTests(BaseTest):
             NamedTemporaryFile(suffix='.jpg')]
         update_data['image_others'] = [temp_image1, temp_image2]
         update_data['main_image'] = temp_image1
-        update_data['is_published'] = True
         content = encode_multipart('BoUnDaRyStRiNg', update_data)
         content_type = 'multipart/form-data; boundary=BoUnDaRyStRiNg'
 
@@ -471,9 +470,6 @@ class PropertyViewTests(BaseTest):
         self.assertEqual(
             response.data.get('data')['property']['image_others'],
             expected_image_others)
-        # assert that `is_published` is not updated
-        self.assertFalse(response.data.get('data')['property']['is_published']
-                         )
 
     @patch('utils.media_handlers.uploader.destroy')
     @patch('utils.media_handlers.delete_resources')

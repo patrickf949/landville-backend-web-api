@@ -37,6 +37,7 @@ class PropertyFactory(DjangoModelFactory):
     image_others = [fake.url(), fake.url()]
     last_viewed = now()
     status = 'AV'
+    is_published = False
 
 
 class PropertyEnquiryFactory(DjangoModelFactory):
