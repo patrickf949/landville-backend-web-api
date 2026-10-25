@@ -1,5 +1,4 @@
 APScheduler==3.11.2
-celery==5.6.3
 cloudinary==1.44.2
 coverage==7.14.1
 coveralls==4.0.1

@@ -25,5 +25,4 @@ EXPOSE ${PORT}
 
 # Migrate on boot, then serve ASGI (websockets + HTTP) via daphne.
 CMD python manage.py migrate --noinput && \
-    celery -A landville worker -l info & \
     daphne -b 0.0.0.0 -p ${PORT} landville.asgi:application

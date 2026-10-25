@@ -1,0 +1,40 @@
+# Render Blueprint for LandVille backend Web API.
+# Deploy natively as a Python Web Service on Render (no Docker required).
+
+services:
+  - type: web
+    name: landville-backend-web-api
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "python manage.py migrate --noinput && daphne -b 0.0.0.0 -p $PORT landville.asgi:application"
+    healthCheckPath: /api/v1/properties/
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.10"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: "landville-backend-web-api.onrender.com"
+      - key: CORS_WHITELIST
+        value: "https://landville.vercel.app,https://atterville.vercel.app"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://landville.vercel.app,https://atterville.vercel.app"
+      - key: FRONT_END_URL
+        value: "https://landville.vercel.app"
+      - key: DOMAIN
+        value: "https://landville-backend-web-api.onrender.com"
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: SECURE_HSTS_SECONDS
+        value: "3600"
