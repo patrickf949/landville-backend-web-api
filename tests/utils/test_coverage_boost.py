@@ -22,6 +22,17 @@ from utils.throttling import (
 )
 from utils.security_middleware import SecurityAndOriginProtectionMiddleware
 from utils.media_handlers import CloudinaryResourceHandler
+from utils.tasks import task
+
+
+@task(max_retries=5, retry_backoff=0.5)
+def sample_custom_task():
+    return "done"
+
+
+@task
+def sample_default_task():
+    return "done"
 
 
 class UtilsCoverageBoostTests(TestCase):
@@ -206,12 +217,52 @@ class UtilsCoverageBoostTests(TestCase):
             self.assertEqual(res2, 500)
 
     def test_task_backend_exception_handling(self):
-        backend = ThreadedTaskBackend('test_alias', {'OPTIONS': {'MAX_WORKERS': 1}})
+        from django.tasks.base import TaskResultStatus
+        from utils.tasks import task
+
+        backend = ThreadedTaskBackend('test_alias', {'OPTIONS': {'MAX_WORKERS': 1, 'MAX_RETRIES': 1, 'RETRY_BACKOFF': 0}})
         mock_result = MagicMock()
         mock_result.task.name = 'broken_task'
+        mock_result.status = TaskResultStatus.FAILED
+
+        # 1. Exception during _execute_task (retries exhausted)
         with patch.object(backend, '_execute_task', side_effect=RuntimeError("Worker error")):
             with patch('utils.task_backend.close_old_connections'):
-                backend._run_in_worker(mock_result)
+                backend._run_in_worker(mock_result, max_retries=1, backoff=0)
+
+        # 2. Success on retry
+        attempts = 0
+        def fake_execute(res):
+            nonlocal attempts
+            attempts += 1
+            if attempts == 1:
+                res.status = TaskResultStatus.FAILED
+            else:
+                res.status = TaskResultStatus.SUCCESSFUL
+
+        mock_success = MagicMock()
+        mock_success.task.name = 'retry_task'
+        mock_success.status = TaskResultStatus.FAILED
+        with patch.object(backend, '_execute_task', side_effect=fake_execute):
+            with patch('utils.task_backend.close_old_connections'):
+                with patch('utils.task_backend.time.sleep') as mock_sleep:
+                    backend._run_in_worker(mock_success, max_retries=2, backoff=0.01)
+                    self.assertEqual(mock_success.status, TaskResultStatus.SUCCESSFUL)
+                    self.assertEqual(attempts, 2)
+                    mock_sleep.assert_called_once()
+
+        # 3. Task decorator with custom parameters and default parameters
+        self.assertEqual(sample_custom_task.max_retries, 5)
+        self.assertEqual(sample_custom_task.retry_backoff, 0.5)
+        self.assertEqual(sample_default_task.max_retries, 3)
+        self.assertEqual(sample_default_task.retry_backoff, 1.0)
+
+        # 4. TaskCallable exception when func attributes cannot be set
+        from utils.tasks import TaskCallable
+        mock_immutable_task = MagicMock()
+        mock_immutable_task.func = 123  # ints don't allow setattr
+        callable_obj = TaskCallable(mock_immutable_task)
+        self.assertEqual(callable_obj.max_retries, 3)
 
     def test_throttling_classes_directly(self):
         req_get = self.factory.get('/')

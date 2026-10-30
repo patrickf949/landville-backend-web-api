@@ -236,12 +236,14 @@ EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
 # Background Tasks (Native Django 6.0 Task Framework with Threaded Worker Pool)
-# Offloads email dispatch and notifications to worker threads so the main request loop is never jammed.
+# Offloads email dispatch and notifications to worker threads with automated retry handling.
 TASKS = {
     "default": {
         "BACKEND": "utils.task_backend.ThreadedTaskBackend",
         "OPTIONS": {
             "MAX_WORKERS": int(os.environ.get("TASK_WORKERS", 4)),
+            "MAX_RETRIES": int(os.environ.get("TASK_MAX_RETRIES", 3)),
+            "RETRY_BACKOFF": float(os.environ.get("TASK_RETRY_BACKOFF", 1.0)),
         },
     }
 }

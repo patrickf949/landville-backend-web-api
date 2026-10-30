@@ -15,11 +15,19 @@ class TaskCallable:
     - Background enqueue via `send_email_notification.delay(...)`
     - Standard attribute mutability so `@patch('utils.tasks.send_email_notification.delay')`
       works without issue in unit tests.
+    - Exposes retry metadata (max_retries, retry_backoff).
     """
 
-    def __init__(self, task_instance):
+    def __init__(self, task_instance, max_retries=3, retry_backoff=1.0):
         self._task = task_instance
+        self.max_retries = max_retries
+        self.retry_backoff = retry_backoff
         functools.update_wrapper(self, task_instance.func)
+        try:
+            task_instance.func.max_retries = max_retries
+            task_instance.func.retry_backoff = retry_backoff
+        except (AttributeError, TypeError):
+            pass
 
     def __call__(self, *args, **kwargs):
         return self._task.call(*args, **kwargs)
@@ -31,13 +39,22 @@ class TaskCallable:
         return self._task.enqueue(*args, **kwargs)
 
 
-def task(fn):
-    """Task decorator wrapping Django 6.0's task in a TaskCallable."""
-    django_task_obj = django_task(fn)
-    return TaskCallable(django_task_obj)
+def task(fn=None, *, max_retries=3, retry_backoff=1.0, **task_kwargs):
+    """Task decorator wrapping Django 6.0's task in a TaskCallable with retry support."""
+    def decorator(func):
+        django_task_obj = django_task(func, **task_kwargs)
+        return TaskCallable(
+            django_task_obj,
+            max_retries=max_retries,
+            retry_backoff=retry_backoff,
+        )
+
+    if fn is not None:
+        return decorator(fn)
+    return decorator
 
 
-@task
+@task(max_retries=3, retry_backoff=1.0)
 def send_email_notification(body):
     """
     Handles sending of notifications to the user via email in a background worker thread.
