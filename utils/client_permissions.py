@@ -23,4 +23,4 @@ class IsClient(BasePermission):
 
         if request.method in SAFE_METHODS and request.user.is_authenticated:
             return request.user.role == 'LA' or request.user.role == 'CA'
-        return request.user.role == 'CA'
+        return bool(getattr(request.user, 'is_authenticated', False) and getattr(request.user, 'role', None) == 'CA')

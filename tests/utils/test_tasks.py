@@ -1,4 +1,5 @@
 from unittest.mock import patch
+import time
 
 from django.core.mail import EmailMultiAlternatives
 from django.test import TestCase
@@ -7,16 +8,16 @@ from tests.factories.authentication_factory import UserFactory
 from utils.tasks import send_email_notification
 
 
-class CeleryTest(TestCase):
+class TaskWorkerTest(TestCase):
     """
-    This class contains tests for celery tasks
+    Tests for background task execution via Django's task framework.
     """
 
     def setUp(self):
         self.user = UserFactory.create()
         self.email_body = {
             "subject": "Test Status",
-            "recipient": [self.user.email+"m"],
+            "recipient": [self.user.email + "m"],
             "text_body": "email/authentication/base_email.txt",
             "html_body": "email/authentication/base_email.html",
             "context": {
@@ -26,12 +27,23 @@ class CeleryTest(TestCase):
         }
 
     @patch('django.core.mail.EmailMultiAlternatives.send')
-    def test_handle_sending_email(self, mock_email):
+    def test_handle_sending_email_direct(self, mock_email):
         """
-        Test Handling sending of notifications to the user via email
-        :return: bool
+        Test direct invocation of send_email_notification.
         """
         mock_email.return_value = True
-
         send_email_notification(self.email_body)
-        self.assertTrue(EmailMultiAlternatives.send.has_been_called)
+        self.assertTrue(mock_email.called)
+
+    @patch('django.core.mail.EmailMultiAlternatives.send')
+    def test_handle_sending_email_delay(self, mock_email):
+        """
+        Test background enqueue via .delay() method.
+        """
+        mock_email.return_value = True
+        result = send_email_notification.delay(self.email_body)
+        self.assertIsNotNone(result)
+
+        # Allow worker thread a moment to finish execution
+        time.sleep(0.3)
+        self.assertTrue(mock_email.called)

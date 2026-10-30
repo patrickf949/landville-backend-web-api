@@ -40,6 +40,7 @@ from utils import BaseUtils
 from utils.media_handlers import CloudinaryResourceHandler
 from utils.permissions import IsBuyerOrReadOnly, IsReviewer, IsAdmin
 from utils.tasks import send_email_notification
+from utils.throttling import SensitiveActionRateThrottle
 
 Uploader = CloudinaryResourceHandler()
 
@@ -48,6 +49,7 @@ class RegistrationAPIView(generics.GenericAPIView):
     """Register new users."""
     serializer_class = RegistrationSerializer
     renderer_classes = (UserJSONRenderer,)
+    throttle_classes = (SensitiveActionRateThrottle,)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -86,6 +88,7 @@ class LoginAPIView(generics.GenericAPIView):
     """login a user via email"""
     serializer_class = LoginSerializer
     renderer_classes = (UserJSONRenderer,)
+    throttle_classes = (SensitiveActionRateThrottle,)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -443,6 +446,7 @@ class PasswordResetView(APIView):
     """Handle resetting a forgotten password."""
     renderer_classes = (UserJSONRenderer,)
     serializer_class = PasswordResetSerializer
+    throttle_classes = (SensitiveActionRateThrottle,)
 
     def post(self, request):
         data = request.data

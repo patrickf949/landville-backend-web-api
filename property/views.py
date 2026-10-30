@@ -44,6 +44,7 @@ from utils.permissions import (
     IsBuyer,
 )
 from utils.tasks import send_email_notification
+from utils.throttling import SensitiveActionRateThrottle
 
 
 class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
@@ -54,6 +55,7 @@ class ListCreateEnquiryAPIView(generics.ListCreateAPIView):
     serializer_class = PropertyEnquirySerializer
     permission_classes = (IsAuthenticated, IsBuyer)
     renderer_classes = (PropertyEnquiryJSONRenderer, )
+    throttle_classes = (SensitiveActionRateThrottle,)
 
     def get_queryset(self):
         """ return different results depending on who is making a request """

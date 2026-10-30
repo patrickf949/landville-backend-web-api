@@ -88,6 +88,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'utils.security_middleware.SecurityAndOriginProtectionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -120,7 +121,20 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
-    )
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.throttling.BurstAnonRateThrottle',
+        'utils.throttling.BurstUserRateThrottle',
+        'utils.throttling.PostRequestRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': os.environ.get('THROTTLE_ANON', '60/minute'),
+        'user': os.environ.get('THROTTLE_USER', '180/minute'),
+        'post_request': os.environ.get('THROTTLE_POST', '20/minute'),
+        'anon_post': os.environ.get('THROTTLE_ANON_POST', '15/minute'),
+        'user_post': os.environ.get('THROTTLE_USER_POST', '45/minute'),
+        'sensitive_action': os.environ.get('THROTTLE_SENSITIVE', '8/minute'),
+    },
 }
 
 
@@ -221,22 +235,34 @@ EMAIL_PORT = os.environ.get('EMAIL_PORT', '')
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
-# Celery settings
-BROKER_URL = os.environ.get('REDIS_URL')
-CELERY_BROKER_URL = os.environ.get('REDIS_URL')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-# Without a broker (free tier, no Redis) run tasks inline so email
-# notifications still fire without a separate worker dyno. Set
-# CELERY_TASK_ALWAYS_EAGER explicitly to override.
-CELERY_TASK_ALWAYS_EAGER = os.environ.get(
-    'CELERY_TASK_ALWAYS_EAGER',
-    'True' if not os.environ.get('REDIS_URL') else 'False'
-).lower() in ('1', 'true', 'yes', 'on')
-CELERY_TASK_EAGER_PROPAGATES = CELERY_TASK_ALWAYS_EAGER
+# Background Tasks (Native Django 6.0 Task Framework with Threaded Worker Pool)
+# Offloads email dispatch and notifications to worker threads with automated retry handling.
+TASKS = {
+    "default": {
+        "BACKEND": "utils.task_backend.ThreadedTaskBackend",
+        "OPTIONS": {
+            "MAX_WORKERS": int(os.environ.get("TASK_WORKERS", 4)),
+            "MAX_RETRIES": int(os.environ.get("TASK_MAX_RETRIES", 3)),
+            "RETRY_BACKOFF": float(os.environ.get("TASK_RETRY_BACKOFF", 1.0)),
+        },
+    }
+}
+
+# Cache configuration (uses Redis when available, falls back to LocMem for single-instance/free tier)
+if os.environ.get('REDIS_URL'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': os.environ.get('REDIS_URL'),
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'landville-cache',
+        }
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -255,9 +281,6 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
-CORS_ALLOW_ALL_ORIGINS = os.environ.get(
-    'CORS_ALLOW_ALL_ORIGINS', 'False'
-).lower() in ('1', 'true', 'yes', 'on')
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
@@ -266,10 +289,41 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', '')
 
-CORS_ALLOWED_ORIGINS = [
-    origin for origin in os.environ.get('CORS_WHITELIST', '').split(',')
-    if origin
+# Strict origin protection: only allow authorized frontend domains
+CORS_ALLOW_ALL_ORIGINS = os.environ.get(
+    'CORS_ALLOW_ALL_ORIGINS', 'False'
+).lower() in ('1', 'true', 'yes', 'on')
+
+DEFAULT_ALLOWED_ORIGINS = [
+    'https://landville.vercel.app',
+    'https://atterville.vercel.app',
 ]
+
+extra_origins = [
+    origin.strip() for origin in os.environ.get('CORS_WHITELIST', '').split(',')
+    if origin.strip()
+]
+
+CORS_ALLOWED_ORIGINS = list(set(DEFAULT_ALLOWED_ORIGINS + extra_origins))
+
+# Allow Vercel preview deployments if needed
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https:\/\/landville[a-zA-Z0-9_-]*\.vercel\.app$',
+    r'^https:\/\/atterville[a-zA-Z0-9_-]*\.vercel\.app$',
+]
+
+CSRF_TRUSTED_ORIGINS = list(set(
+    CORS_ALLOWED_ORIGINS + [
+        origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+        if origin.strip()
+    ]
+))
+
+# Defensive HTTP headers against bot attacks / clickjacking / sniffing
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
 SALT_KEY = os.environ.get('SALT_KEY', SECRET_KEY)
 CKEDITOR_5_CONFIGS = {
     'default': {
